@@ -23,6 +23,7 @@ import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -78,5 +79,19 @@ public class Pet {
 
     @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Care> cares = new ArrayList<>();
+
+    @Builder
+    public Pet(Long id, String name, String species, int age, Gender gender,
+               String description, String imageUrl, Shelter shelter, Member member) {
+        this.id = id;
+        this.name = name;
+        this.species = species;
+        this.age = age;
+        this.gender = gender;
+        this.description = description;
+        this.imageUrl = imageUrl;
+        this.shelter = shelter;
+        this.member = member;
+    }
 
 }

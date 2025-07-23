@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -65,6 +66,14 @@ public class Member implements UserDetails {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Notification> notifications = new ArrayList<>();
 
+    @Builder
+    public Member(Long id, String email, String password, String name, String phone) {
+        this.id = id;
+        this.email = email;
+        this.password = password;
+        this.name = name;
+        this.phone = phone;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

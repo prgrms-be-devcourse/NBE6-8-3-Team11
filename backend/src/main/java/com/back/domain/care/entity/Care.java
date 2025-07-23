@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -71,4 +72,16 @@ public class Care {
 
     @OneToMany(mappedBy = "care", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Notification> notifications = new ArrayList<>();
+
+    @Builder
+    public Care(ReceivedStatus receivedStatus, String message, LocalDateTime desiredStartDate,
+                LocalDateTime desiredEndDate, RequestStatus status, Member member, Pet pet) {
+        this.receivedStatus = receivedStatus;
+        this.message = message;
+        this.desiredStartDate = desiredStartDate;
+        this.desiredEndDate = desiredEndDate;
+        this.status = status;
+        this.member = member;
+        this.pet = pet;
+    }
 }

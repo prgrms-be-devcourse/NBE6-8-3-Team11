@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -66,4 +67,13 @@ public class Adoption {
 
     @OneToMany(mappedBy = "adoption", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Notification> notifications = new ArrayList<>();
+
+    @Builder
+    public Adoption(ReceivedStatus receivedStatus, String message, RequestStatus status, Member member, Pet pet) {
+        this.receivedStatus = receivedStatus;
+        this.message = message;
+        this.status = status;
+        this.member = member;
+        this.pet = pet;
+    }
 }

@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -55,4 +56,14 @@ public class Shelter {
 
     @OneToMany(mappedBy = "shelter")
     private List<Pet> pets = new ArrayList<>();
+
+    @Builder
+    public Shelter(String name, String address, String city, String state, String zipCode, String phone) {
+        this.name = name;
+        this.address = address;
+        this.city = city;
+        this.state = state;
+        this.zipCode = zipCode;
+        this.phone = phone;
+    }
 }
