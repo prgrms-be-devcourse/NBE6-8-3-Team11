@@ -107,13 +107,30 @@ npm start
 ```
 frontend/
 ├── src/
-│   └── app/
-│       ├── page.tsx          # 메인 페이지
-│       ├── layout.tsx        # 레이아웃
-│       └── globals.css       # 전역 스타일
-├── public/                   # 정적 파일
-├── package.json              # 의존성 관리
-└── README.md                # 프로젝트 문서
+│   ├── app/                    # App Router
+│   │   ├── page.tsx           # 메인 페이지
+│   │   ├── layout.tsx         # 레이아웃
+│   │   └── globals.css        # 전역 스타일
+│   ├── components/             # 재사용 컴포넌트
+│   │   ├── Header.tsx         # 헤더 컴포넌트
+│   │   ├── HeroSection.tsx    # 히어로 섹션
+│   │   ├── StatsSection.tsx   # 통계 섹션
+│   │   ├── ServicesSection.tsx # 서비스 소개
+│   │   ├── GalleryPreview.tsx # 갤러리 미리보기
+│   │   ├── CTASection.tsx     # CTA 섹션
+│   │   └── Footer.tsx         # 푸터 컴포넌트
+│   ├── hooks/                  # 커스텀 훅
+│   │   ├── useLocalStorage.ts # 로컬 스토리지 훅
+│   │   ├── useScrollPosition.ts # 스크롤 위치 훅
+│   │   └── useWindowSize.ts   # 윈도우 크기 훅
+│   ├── utils/                  # 유틸리티 함수
+│   │   ├── constants.ts       # 상수 정의
+│   │   └── helpers.ts         # 헬퍼 함수들
+│   └── types/                  # TypeScript 타입
+│       └── index.ts           # 타입 정의
+├── public/                     # 정적 파일
+├── package.json                # 의존성 관리
+└── README.md                  # 프로젝트 문서
 ```
 
 ## 🎯 타겟 사용자
