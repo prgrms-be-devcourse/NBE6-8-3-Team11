@@ -105,7 +105,7 @@ export const CONTACT_INFO = {
 
 // 브랜드 정보
 export const BRAND_INFO = {
-  name: '펫프렌드',
+  name: '돌봄즈',
   logo: '🐾',
   description: '유기동물과 입양희망자를 연결하는 따뜻한 플랫폼입니다.',
 }; 
