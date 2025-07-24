@@ -1,10 +1,18 @@
 // 숫자 포맷팅 함수
 export const formatNumber = (num: number): string => {
+  if (typeof num !== 'number' || isNaN(num)) {
+    console.warn('Invalid number provided:', num);
+    return '0';
+  }
   return num.toLocaleString();
 };
 
 // 날짜 포맷팅 함수
 export const formatDate = (date: Date): string => {
+  if (!(date instanceof Date) || isNaN(date.getTime())) {
+    console.warn('Invalid date provided:', date);
+    return '날짜 미상';
+  }
   return new Intl.DateTimeFormat('ko-KR', {
     year: 'numeric',
     month: 'long',
@@ -14,12 +22,20 @@ export const formatDate = (date: Date): string => {
 
 // 동물 나이 표시 함수
 export const formatAnimalAge = (age: number): string => {
+  if (typeof age !== 'number' || age < 0) {
+    console.warn('Invalid age provided:', age);
+    return '나이 미상';
+  }
   if (age === 1) return '1살';
   return `${age}살`;
 };
 
 // 동물 성별 표시 함수
 export const formatAnimalGender = (gender: 'male' | 'female'): string => {
+  if (!gender || !['male', 'female'].includes(gender)) {
+    console.warn('Invalid gender provided:', gender);
+    return '성별 미상';
+  }
   return gender === 'male' ? '수컷' : '암컷';
 };
 
@@ -30,11 +46,19 @@ export const formatAnimalSize = (size: 'small' | 'medium' | 'large'): string => 
     medium: '중형',
     large: '대형',
   };
+  if (!size || !sizeMap[size as keyof typeof sizeMap]) {
+    console.warn('Invalid size provided:', size);
+    return '크기 미상';
+  }
   return sizeMap[size];
 };
 
 // 동물 타입 표시 함수
 export const formatAnimalType = (type: string): string => {
+  if (!type || typeof type !== 'string') {
+    console.warn('Invalid type provided:', type);
+    return '종류 미상';
+  }
   const typeMap: Record<string, string> = {
     dog: '강아지',
     cat: '고양이',
