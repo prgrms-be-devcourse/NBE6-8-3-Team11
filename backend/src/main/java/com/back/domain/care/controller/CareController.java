@@ -27,11 +27,6 @@ public class CareController {
     public ResponseEntity<ApiResponse<CareResponseDto>> applyCare(
             @RequestBody CareRequestDto careRequestDto,
             @AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                    ApiResponse.fail("AUTH-403", "로그인이 필요합니다.")
-            );
-        }
         CareResponseDto careResponseDto = careService.applyCare(careRequestDto, userDetails.getUsername());
         // 알람은 추후 구현
         return ResponseEntity.status(HttpStatus.OK).body(

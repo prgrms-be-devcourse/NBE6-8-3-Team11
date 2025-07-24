@@ -9,6 +9,8 @@ import com.back.domain.member.exception.MemberErrorCode;
 import com.back.domain.member.exception.MemberException;
 import com.back.domain.member.repository.MemberRepository;
 import com.back.domain.pet.entity.Pet;
+import com.back.domain.pet.entity.PetStatus;
+import com.back.domain.pet.enums.PetStatusType;
 import com.back.domain.pet.exception.PetErrorCode;
 import com.back.domain.pet.exception.PetException;
 import com.back.domain.pet.repository.PetRepository;
@@ -29,6 +31,13 @@ public class CareService {
 
         Pet pet = petRepository.findById(careRequestDto.petId())
                 .orElseThrow(() -> new PetException(PetErrorCode.PET_NOT_FOUND));
+
+        boolean isAvailableForCare = pet.getStatuses().stream()
+                .anyMatch(status -> status.getStatus().equals(PetStatusType.AVAILABLE_FOR_CARE));
+
+        if (!isAvailableForCare) {
+            throw new PetException(PetErrorCode.PET_NOT_AVAILABLE_FOR_CARE);
+        }
 
         Care care = Care.builder()
                 .member(member)
