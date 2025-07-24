@@ -111,6 +111,42 @@ public class AdoptionService {
         }
     }
 
+    public List<ApplicationSimpleListResponseDto> getReceivedApplications(String memberEmail) {
+        Member member = getMemberByEmail(memberEmail);
+
+        List<Adoption> adoptions = adoptionRepository.findByPet_MemberOrderByCreatedAtDesc(member);
+        List<Care> cares = careRepository.findByPet_MemberOrderByCreatedAtDesc(member);
+
+        List<ApplicationSimpleListResponseDto> applications = new ArrayList<>();
+
+        for (Adoption adoption : adoptions) {
+            applications.add(ApplicationSimpleListResponseDto.fromAdoption(adoption));
+        }
+
+        for (Care care : cares) {
+            applications.add(ApplicationSimpleListResponseDto.fromCare(care));
+        }
+        // createdAt 기준으로 내림차순 정렬 (최신순)
+        applications.sort(Comparator.comparing(ApplicationSimpleListResponseDto::createdAt).reversed());
+
+        return applications;
+    }
+
+    public ApplicationResponseDto getReceivedApplicationDetails(
+            AdoptionOrCareSearchRequestDto requestDto, String memberEmail) {
+        Member member = getMemberByEmail(memberEmail);
+        Object entity = getApplicationEntity(requestDto, member);
+
+        if (entity instanceof Adoption adoption) {
+            return ApplicationResponseDto.fromAdoption(adoption);
+        } else if (entity instanceof Care care) {
+            return ApplicationResponseDto.fromCare(care);
+        }
+        throw new IllegalArgumentException("Invalid application type: " + requestDto.type());
+    }
+
+
+
     private Member getMemberByEmail(String memberEmail) {
         return memberRepository.findByEmail(memberEmail)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
@@ -127,5 +163,4 @@ public class AdoptionService {
             throw new IllegalArgumentException("Invalid application type: " + requestDto.type());
         }
     }
-
 }

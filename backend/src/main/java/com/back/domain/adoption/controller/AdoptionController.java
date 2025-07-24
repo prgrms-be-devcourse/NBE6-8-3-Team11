@@ -3,7 +3,6 @@ package com.back.domain.adoption.controller;
 import com.back.domain.adoption.dto.request.AdoptionOrCareSearchRequestDto;
 import com.back.domain.adoption.dto.request.AdoptionRequestDto;
 import com.back.domain.adoption.dto.response.AdoptionResponseDto;
-import com.back.domain.adoption.dto.response.ApplicationListResponseDto;
 import com.back.domain.adoption.dto.response.ApplicationResponseDto;
 import com.back.domain.adoption.dto.response.ApplicationSimpleListResponseDto;
 import com.back.domain.adoption.service.AdoptionService;
@@ -103,6 +102,39 @@ public class AdoptionController {
         adoptionService.deleteAllHistory(userDetails.getUsername());
         return ResponseEntity.status(HttpStatus.OK).body(
                 ApiResponse.success(null)
+        );
+    }
+
+    @GetMapping("/received")
+    @Operation(summary = "보호자가 받은 입양/돌봄 신청 내역 리스트 조회", description = "보호자가 받은 입양 및 돌봄 신청 내역 리스트를 조회합니다.")
+    public ResponseEntity<ApiResponse<List<ApplicationSimpleListResponseDto>>> getReceivedApplications(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ApiResponse.fail("AUTH-403", "로그인이 필요합니다.")
+            );
+        }
+        List<ApplicationSimpleListResponseDto> receivedApplications
+                = adoptionService.getReceivedApplications(userDetails.getUsername());
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(receivedApplications)
+        );
+    }
+
+    @GetMapping("/received")
+    @Operation(summary = "보호자가 받은 입양/돌봄 신청 내역 상세 조회", description = "보호자가 받은 입양 및 돌봄 신청 내역을 상세 조회합니다.")
+    public ResponseEntity<ApiResponse<ApplicationResponseDto>> getReceivedApplicationDetail(
+            @RequestBody AdoptionOrCareSearchRequestDto requestDto,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ApiResponse.fail("AUTH-403", "로그인이 필요합니다.")
+            );
+        }
+        ApplicationResponseDto applicationDetails
+                = adoptionService.getReceivedApplicationDetails(requestDto, userDetails.getUsername());
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(applicationDetails)
         );
     }
 
