@@ -84,7 +84,7 @@ export const scrollToSection = (sectionId: string): void => {
 
 // 로컬 스토리지 헬퍼 함수들
 export const storage = {
-  get: (key: string): any => {
+  get: (key: string): unknown => {
     try {
       const item = localStorage.getItem(key);
       return item ? JSON.parse(item) : null;
@@ -94,7 +94,7 @@ export const storage = {
     }
   },
   
-  set: (key: string, value: any): void => {
+  set: (key: string, value: unknown): void => {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (error) {
@@ -112,7 +112,7 @@ export const storage = {
 };
 
 // 디바운스 함수
-export const debounce = <T extends (...args: any[]) => any>(
+export const debounce = <T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {
