@@ -41,6 +41,9 @@ public class Care {
     @Column(name = "care_id")
     private Long id;
 
+    @Column(name = "care_title", nullable = false)
+    private String title;
+
     @Lob
     @Column(name = "care_message", nullable = false)
     private String message;
@@ -70,8 +73,9 @@ public class Care {
     private List<Notification> notifications = new ArrayList<>();
 
     @Builder
-    public Care(String message, LocalDateTime desiredStartDate,
+    public Care(String title, String message, LocalDateTime desiredStartDate,
                 LocalDateTime desiredEndDate, RequestStatus status, Member member, Pet pet) {
+        this.title = title;
         this.message = message;
         this.desiredStartDate = desiredStartDate;
         this.desiredEndDate = desiredEndDate;

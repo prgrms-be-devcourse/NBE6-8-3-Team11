@@ -9,6 +9,7 @@ public record AdoptionResponseDto(
         Long adoptionId,
         Long petId,
         Long memberId,
+        String title,
         String message,
         LocalDateTime createdAt
 
@@ -19,6 +20,7 @@ public record AdoptionResponseDto(
                 .adoptionId(adoption.getId())
                 .petId(adoption.getPet().getId())
                 .memberId(adoption.getMember().getId())
+                .title(adoption.getTitle())
                 .message(adoption.getMessage())
                 .createdAt(adoption.getCreatedAt())
                 .build();

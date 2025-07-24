@@ -25,7 +25,7 @@ public class CareController {
     public ResponseEntity<ApiResponse<CareResponseDto>> applyCare(
             @RequestBody CareRequestDto careRequestDto) {
         CareResponseDto careResponseDto = careService.applyCare(careRequestDto);
-
+        // 알람은 추후 구현
         return ResponseEntity.status(HttpStatus.OK).body(
                 ApiResponse.success(careResponseDto)
         );

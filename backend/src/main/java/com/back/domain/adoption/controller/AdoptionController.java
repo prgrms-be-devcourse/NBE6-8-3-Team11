@@ -2,17 +2,22 @@ package com.back.domain.adoption.controller;
 
 import com.back.domain.adoption.dto.request.AdoptionRequestDto;
 import com.back.domain.adoption.dto.response.AdoptionResponseDto;
+import com.back.domain.adoption.dto.response.ApplicationListResponseDto;
+import com.back.domain.adoption.dto.response.ApplicationSimpleListResponseDto;
 import com.back.domain.adoption.service.AdoptionService;
 import com.back.global.common.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/applies")
@@ -29,6 +34,16 @@ public class AdoptionController {
         // 알람은 추후 구현
         return ResponseEntity.status(HttpStatus.OK).body(
                 ApiResponse.success(adoptionResponseDto)
+        );
+    }
+
+        @GetMapping("/{memberId}")
+    @Operation(summary = "회원 입양/돌봄 신청 목록 조회", description = "회원의 입양 및 돌봄 신청 목록을 조회합니다.")
+    public ResponseEntity<ApiResponse<List<ApplicationSimpleListResponseDto>>> getAdoptionAndCareList(
+            @PathVariable Long memberId) {
+        List<ApplicationSimpleListResponseDto> simpleApplications = adoptionService.getMemberApplications(memberId);
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(simpleApplications)
         );
     }
 }

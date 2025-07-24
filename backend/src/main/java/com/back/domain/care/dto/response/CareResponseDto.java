@@ -10,6 +10,7 @@ public record CareResponseDto(
         Long careId,
         Long petId,
         Long memberId,
+        String title,
         String message,
         LocalDateTime desiredStartDate,
         LocalDateTime desiredEndDate,
@@ -22,6 +23,7 @@ public record CareResponseDto(
                 .careId(care.getId())
                 .petId(care.getPet().getId())
                 .memberId(care.getMember().getId())
+                .title(care.getTitle())
                 .message(care.getMessage())
                 .desiredStartDate(care.getDesiredStartDate())
                 .desiredEndDate(care.getDesiredEndDate())

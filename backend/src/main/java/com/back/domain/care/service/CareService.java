@@ -33,6 +33,7 @@ public class CareService {
         Care care = Care.builder()
                 .member(member)
                 .pet(pet)
+                .title(careRequestDto.title())
                 .message(careRequestDto.message())
                 .desiredStartDate(careRequestDto.desiredStartDate())
                 .desiredEndDate(careRequestDto.desiredEndDate())

@@ -42,6 +42,9 @@ public class Adoption {
     @Column(name = "adoption_id")
     private Long id;
 
+    @Column(name = "adoption_title", nullable = false)
+    private String title;
+
     @Lob
     @Column(name = "adoption_message", nullable = false)
     private String message;
@@ -65,7 +68,8 @@ public class Adoption {
     private List<Notification> notifications = new ArrayList<>();
 
     @Builder
-    public Adoption(String message, RequestStatus status, Member member, Pet pet) {
+    public Adoption(String title, String message, RequestStatus status, Member member, Pet pet) {
+        this.title = title;
         this.message = message;
         this.status = status;
         this.member = member;
