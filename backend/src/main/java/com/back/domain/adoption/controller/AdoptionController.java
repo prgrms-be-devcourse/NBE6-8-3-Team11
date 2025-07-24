@@ -1,5 +1,6 @@
 package com.back.domain.adoption.controller;
 
+import com.back.domain.adoption.dto.request.AdoptionCareStatusUpdateRequestDto;
 import com.back.domain.adoption.dto.request.AdoptionOrCareSearchRequestDto;
 import com.back.domain.adoption.dto.request.AdoptionRequestDto;
 import com.back.domain.adoption.dto.response.AdoptionResponseDto;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -135,6 +137,56 @@ public class AdoptionController {
                 = adoptionService.getReceivedApplicationDetails(requestDto, userDetails.getUsername());
         return ResponseEntity.status(HttpStatus.OK).body(
                 ApiResponse.success(applicationDetails)
+        );
+    }
+
+    @PutMapping("/received")
+    @Operation(summary = "보호자가 받은 입양/돌봄 신청 내역 상태 변경 - 수락/거절(ACCEPTED/REJECTED)",
+            description = "보호자가 받은 입양 및 돌봄 신청 내역의 상태를 변경(수락/거절)합니다.")
+    public ResponseEntity<ApiResponse<Void>> updateReceivedApplicationStatus(
+            @RequestBody AdoptionCareStatusUpdateRequestDto requestDto,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ApiResponse.fail("AUTH-403", "로그인이 필요합니다.")
+            );
+        }
+        adoptionService.updateReceivedApplicationStatus(requestDto, userDetails.getUsername());
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(null)
+        );
+    }
+
+    @DeleteMapping("/received")
+    @Operation(summary = "보호자가 받은 입양/돌봄 등록 내역 단건 취소(삭제)",
+            description = "보호자가 받은 입양 및 돌봄 등록 내역 하나를 취소합니다.")
+    public ResponseEntity<ApiResponse<Void>> deleteReceivedApplication(
+            @RequestBody AdoptionOrCareSearchRequestDto requestDto,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ApiResponse.fail("AUTH-403", "로그인이 필요합니다.")
+            );
+        }
+        adoptionService.deleteSingleHistory(requestDto, userDetails.getUsername());
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(null)
+        );
+    }
+
+    @DeleteMapping("/received")
+    @Operation(summary = "보호자가 받은 입양/돌봄 등록 내역 전체 취소(삭제)",
+            description = "보호자가 받은 입양 및 돌봄 등록 내역 전체를 취소합니다.")
+    public ResponseEntity<ApiResponse<Void>> deleteReceivedApplicationsAll(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ApiResponse.fail("AUTH-403", "로그인이 필요합니다.")
+            );
+        }
+        adoptionService.deleteOwnerAllHistory(userDetails.getUsername());
+        return ResponseEntity.status(HttpStatus.OK).body(
+                ApiResponse.success(null)
         );
     }
 

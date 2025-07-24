@@ -1,5 +1,6 @@
 package com.back.domain.adoption.service;
 
+import com.back.domain.adoption.dto.request.AdoptionCareStatusUpdateRequestDto;
 import com.back.domain.adoption.dto.request.AdoptionOrCareSearchRequestDto;
 import com.back.domain.adoption.dto.request.AdoptionRequestDto;
 import com.back.domain.adoption.dto.response.AdoptionResponseDto;
@@ -145,6 +146,35 @@ public class AdoptionService {
         throw new IllegalArgumentException("Invalid application type: " + requestDto.type());
     }
 
+    public void updateReceivedApplicationStatus(AdoptionCareStatusUpdateRequestDto requestDto, String memberEmail) {
+        Member member = getMemberByEmail(memberEmail);
+        Object entity = getApplicationEntity(requestDto, member);
+
+        if (entity instanceof Adoption adoption) {
+            adoption.updateStatus(requestDto.status());
+            adoptionRepository.save(adoption);
+        } else if (entity instanceof Care care) {
+            care.updateStatus(requestDto.status());
+            careRepository.save(care);
+        } else {
+            throw new IllegalArgumentException("Invalid application type: " + requestDto.type());
+        }
+    }
+
+    public void deleteOwnerAllHistory(String memberEmail) {
+        Member member = getMemberByEmail(memberEmail);
+
+        List<Adoption> adoptions = adoptionRepository.findByPet_MemberOrderByCreatedAtDesc(member);
+        List<Care> cares = careRepository.findByPet_MemberOrderByCreatedAtDesc(member);
+
+        for (Adoption adoption : adoptions) {
+            adoptionRepository.delete(adoption);
+        }
+
+        for (Care care : cares) {
+            careRepository.delete(care);
+        }
+    }
 
 
     private Member getMemberByEmail(String memberEmail) {
@@ -152,15 +182,24 @@ public class AdoptionService {
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 
-    private Object getApplicationEntity(AdoptionOrCareSearchRequestDto requestDto, Member member) {
-        if (requestDto.type().equals("ADOPTION")) {
-            return adoptionRepository.findByIdAndMember(requestDto.id(), member)
+    private Object getApplicationEntity(String type, Long id, Member member) {
+        if (type.equals("ADOPTION")) {
+            return adoptionRepository.findByIdAndMember(id, member)
                     .orElseThrow(() -> new PetException(PetErrorCode.PET_NOT_FOUND));
-        } else if (requestDto.type().equals("CARE")) {
-            return careRepository.findByIdAndMember(requestDto.id(), member)
+        } else if (type.equals("CARE")) {
+            return careRepository.findByIdAndMember(id, member)
                     .orElseThrow(() -> new PetException(PetErrorCode.PET_NOT_FOUND));
         } else {
-            throw new IllegalArgumentException("Invalid application type: " + requestDto.type());
+            throw new IllegalArgumentException("Invalid application type: " + type);
         }
     }
+
+    private Object getApplicationEntity(AdoptionOrCareSearchRequestDto requestDto, Member member) {
+        return getApplicationEntity(requestDto.type(), requestDto.id(), member);
+    }
+
+    private Object getApplicationEntity(AdoptionCareStatusUpdateRequestDto requestDto, Member member) {
+        return getApplicationEntity(requestDto.type(), requestDto.id(), member);
+    }
+
 }
