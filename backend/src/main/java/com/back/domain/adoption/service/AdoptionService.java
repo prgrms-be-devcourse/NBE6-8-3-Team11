@@ -1,7 +1,6 @@
 package com.back.domain.adoption.service;
 
 import com.back.domain.adoption.dto.request.AdoptionCareStatusUpdateRequestDto;
-import com.back.domain.adoption.dto.request.AdoptionOrCareSearchRequestDto;
 import com.back.domain.adoption.dto.request.AdoptionRequestDto;
 import com.back.domain.adoption.dto.response.AdoptionResponseDto;
 import com.back.domain.adoption.dto.response.ApplicationResponseDto;
@@ -74,21 +73,21 @@ public class AdoptionService {
         return applications;
     }
 
-    public ApplicationResponseDto getApplicationDetails(AdoptionOrCareSearchRequestDto requestDto, String memberEmail) {
+    public ApplicationResponseDto getApplicationDetails(Long typeId, String type, String memberEmail) {
         Member member = getMemberByEmail(memberEmail);
-        Object entity = getApplicationEntity(requestDto, member);
+        Object entity = getApplicationEntity(type, typeId, member);
 
         if (entity instanceof Adoption adoption) {
             return ApplicationResponseDto.fromAdoption(adoption);
         } else if (entity instanceof Care care) {
             return ApplicationResponseDto.fromCare(care);
         }
-        throw new IllegalArgumentException("Invalid application type: " + requestDto.type());
+        throw new IllegalArgumentException("Invalid application type: " + type);
     }
 
-    public void deleteSingleHistory(AdoptionOrCareSearchRequestDto requestDto, String memberEmail) {
+    public void deleteSingleHistory(Long typeId, String type, String memberEmail) {
         Member member = getMemberByEmail(memberEmail);
-        Object entity = getApplicationEntity(requestDto, member);
+        Object entity = getApplicationEntity(type, typeId, member);
 
         if (entity instanceof Adoption adoption) {
             adoptionRepository.delete(adoption);
@@ -134,16 +133,16 @@ public class AdoptionService {
     }
 
     public ApplicationResponseDto getReceivedApplicationDetails(
-            AdoptionOrCareSearchRequestDto requestDto, String memberEmail) {
+            Long typeId, String type, String memberEmail) {
         Member member = getMemberByEmail(memberEmail);
-        Object entity = getApplicationEntity(requestDto, member);
+        Object entity = getApplicationEntity(type, typeId, member);
 
         if (entity instanceof Adoption adoption) {
             return ApplicationResponseDto.fromAdoption(adoption);
         } else if (entity instanceof Care care) {
             return ApplicationResponseDto.fromCare(care);
         }
-        throw new IllegalArgumentException("Invalid application type: " + requestDto.type());
+        throw new IllegalArgumentException("Invalid application type: " + type);
     }
 
     public void updateReceivedApplicationStatus(AdoptionCareStatusUpdateRequestDto requestDto, String memberEmail) {
@@ -192,10 +191,6 @@ public class AdoptionService {
         } else {
             throw new IllegalArgumentException("Invalid application type: " + type);
         }
-    }
-
-    private Object getApplicationEntity(AdoptionOrCareSearchRequestDto requestDto, Member member) {
-        return getApplicationEntity(requestDto.type(), requestDto.id(), member);
     }
 
     private Object getApplicationEntity(AdoptionCareStatusUpdateRequestDto requestDto, Member member) {
