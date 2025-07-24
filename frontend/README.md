@@ -124,7 +124,7 @@ frontend/
 │   │   │   └── index.ts      # 헬퍼 함수들
 │   │   ├── types/            # TypeScript 타입
 │   │   │   └── index.ts      # 타입 정의
-│   │   ├── services/         # API 서비스
+│   │   ├── services/         # API 서비스 (추후 업데이트)
 │   │   │   ├── apiClient.ts  # API 클라이언트
 │   │   │   └── animalService.ts # 동물 관련 API
 │   │   └── constants/        # 상수
