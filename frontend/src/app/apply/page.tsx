@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '../../shared/components/layout/Header';
 import Footer from '../../shared/components/layout/Footer';
-import { MOCK_PETS, MOCK_SHELTERS, MOCK_MEMBERS } from '../../shared/constants';
-import { Pet, Shelter, Member } from '../../shared/types';
+import { MOCK_PETS, MOCK_SHELTERS } from '../../shared/constants';
+import { Pet, Shelter } from '../../shared/types';
 import { formatAnimalAge, formatAnimalGender, formatAnimalSpecies } from '../../shared/utils';
 import Image from 'next/image';
 
@@ -20,7 +20,7 @@ interface AdoptionFormData {
   reason: string;
 }
 
-export default function ApplyPage() {
+function ApplyPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const petIdFromUrl = searchParams.get('petId');
@@ -99,7 +99,7 @@ export default function ApplyPage() {
         router.push('/profile');
       }, 3000);
       
-    } catch (error) {
+    } catch {
       setSubmitMessage('입양 신청에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
@@ -317,5 +317,21 @@ export default function ApplyPage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+export default function ApplyPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500"></div>
+        </div>
+        <Footer />
+      </div>
+    }>
+      <ApplyPageContent />
+    </Suspense>
   );
 } 
