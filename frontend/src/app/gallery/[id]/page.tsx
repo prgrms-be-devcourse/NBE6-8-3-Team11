@@ -55,57 +55,93 @@ export default function AnimalDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <main className="max-w-3xl mx-auto px-4 py-10">
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col md:flex-row">
-          {/* 이미지 */}
-          <div className="relative w-full md:w-1/2 h-72 md:h-auto">
-            {pet.imageUrl ? (
-              <Image
-                src={pet.imageUrl}
-                alt={pet.name}
-                fill
-                className="object-cover"
-                priority
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100">
-                <span className="text-6xl">🐾</span>
+      <main className="max-w-4xl mx-auto px-4 py-8">
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          {/* 헤더 영역 */}
+          <div className="border-b border-gray-200 p-6">
+            <div className="flex justify-between items-start">
+              {/* 좌측: 입양 + 동물 이름 */}
+              <div>
+                <div className="text-sm text-orange-600 font-medium mb-1">입양</div>
+                <h1 className="text-3xl font-bold text-gray-900">{pet.name}</h1>
               </div>
-            )}
+              
+              {/* 우측: 날짜 + 상태 */}
+              <div className="text-right">
+                <div className="text-sm text-gray-500 mb-1">
+                  {pet.createdAt instanceof Date ? pet.createdAt.toLocaleDateString() : String(pet.createdAt)}
+                </div>
+                <div className="flex items-center justify-end">
+                  <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
+                    입양 가능
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
-          {/* 정보 */}
-          <div className="flex-1 p-8 flex flex-col justify-between">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">{pet.name}</h2>
-              <div className="flex flex-wrap gap-2 mb-4">
-                <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                  {formatAnimalSpecies(pet.species)}
-                </span>
-                <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">
-                  {formatAnimalGender(pet.gender)}
-                </span>
-                <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded">
-                  {formatAnimalAge(pet.age)}
-                </span>
-              </div>
-              <p className="text-gray-700 mb-6 whitespace-pre-line">{pet.description}</p>
-              <div className="text-sm text-gray-500 mb-2">
-                <span className="font-medium">등록일:</span> {pet.createdAt instanceof Date ? pet.createdAt.toLocaleDateString() : String(pet.createdAt)}
-              </div>
-              {shelter && (
-                <div className="text-sm text-gray-500">
-                  <span className="font-medium">보호소:</span> {shelter.name} <br />
-                  <span className="font-medium">주소:</span> {shelter.address} <br />
-                  <span className="font-medium">연락처:</span> {shelter.phone}
+
+          {/* 본문 영역 */}
+          <div className="p-6">
+            {/* 동물 사진 */}
+            <div className="mb-8">
+              {pet.imageUrl ? (
+                <div className="w-full h-96 relative rounded-lg overflow-hidden">
+                  <Image
+                    src={pet.imageUrl}
+                    alt={pet.name}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                </div>
+              ) : (
+                <div className="w-full h-96 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <span className="text-6xl text-gray-400">🐾</span>
                 </div>
               )}
             </div>
-            <div className="mt-8 flex gap-4">
-              <button className="flex-1 bg-orange-500 text-white py-3 rounded-lg text-lg font-semibold hover:bg-orange-600 transition-colors">
-                입양 신청하기
-              </button>
-              <button onClick={() => router.push('/gallery')} className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg text-lg font-semibold hover:bg-gray-200 transition-colors">
-                목록으로
+
+            {/* 동물 정보 */}
+            <div className="space-y-6">
+              {/* 기본 정보 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="text-sm text-gray-500 mb-1">종류</div>
+                  <div className="font-semibold text-gray-900">{formatAnimalSpecies(pet.species)}</div>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="text-sm text-gray-500 mb-1">나이</div>
+                  <div className="font-semibold text-gray-900">{formatAnimalAge(pet.age)}</div>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="text-sm text-gray-500 mb-1">성별</div>
+                  <div className="font-semibold text-gray-900">{formatAnimalGender(pet.gender)}</div>
+                </div>
+              </div>
+
+              {/* 상세 설명 */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">상세 정보</h3>
+                <p className="text-gray-700 leading-relaxed whitespace-pre-line">{pet.description}</p>
+              </div>
+
+              {/* 보호소 정보 */}
+              {shelter && (
+                <div className="bg-orange-50 p-4 rounded-lg">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">보호소 정보</h3>
+                  <div className="space-y-2 text-sm">
+                    <div><span className="font-medium">보호소명:</span> {shelter.name}</div>
+                    <div><span className="font-medium">주소:</span> {shelter.address}</div>
+                    <div><span className="font-medium">연락처:</span> {shelter.phone}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 입양·돌봄 신청 버튼 */}
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <button className="w-full bg-orange-500 text-white py-4 rounded-lg text-lg font-semibold hover:bg-orange-600 transition-colors">
+                입양 · 돌봄 신청하기
               </button>
             </div>
           </div>
