@@ -47,8 +47,8 @@ jobs:
   simple-notify:
     name: Simple Slack Notify  
     runs-on: ubuntu-latest
-    # pull_request와 pull_request_target 둘 다 지원
-    if: ${{ !github.event.pull_request.draft && secrets.SLACK_WEBHOOK_URL != '' }}
+    # 디버깅을 위해 조건 완화
+    if: ${{ !github.event.pull_request.draft }}
     steps:
       # CI 완료까지 대기 (간단한 방법)
       - name: Wait for CI completion
