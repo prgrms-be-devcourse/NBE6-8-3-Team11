@@ -6,8 +6,87 @@ on:
     branches:
       - main
       - develop
+  # 수동 트리거 추가 (테스트용)
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR 번호'
+        required: true
+        type: string
 
 jobs:
+  # 수동 실행용 테스트 Job
+  test-manual:
+    name: Manual Test Notification
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    steps:
+      - name: Send Manual Test Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          cat << EOF > manual_test.json
+{
+  "blocks": [
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "🧪 수동 테스트 - Slack 알림"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*제목*\n\`\`\`수동 테스트: Slack 알림 기능 확인\`\`\`"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*작성자*\n👤 @${{ github.actor }}"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*PR 번호*\n<https://github.com/${{ github.repository }}/pull/${{ inputs.pr_number }}|#${{ inputs.pr_number }}>"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*상태*\n✅ 수동 테스트 성공"
+      }
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "PR 확인하기 🚀"
+          },
+          "style": "primary",
+          "url": "https://github.com/${{ github.repository }}/pull/${{ inputs.pr_number }}"
+        }
+      ]
+    }
+  ]
+}
+EOF
+          
+          curl -X POST -H 'Content-type: application/json' \
+            --data @manual_test.json \
+            "$SLACK_WEBHOOK_URL"
+          
+          echo "수동 테스트 알림 전송 완료!"
+
   # CI 작업들이 완료되었는지 확인하는 Job
   wait-for-ci:
     name: Wait for CI Completion
