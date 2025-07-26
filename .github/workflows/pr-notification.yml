@@ -125,7 +125,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.base.ref }}
+          # 보안을 위해 base 브랜치 체크아웃 (pull_request_target에서 중요!)
+          ref: ${{ github.event.pull_request.base.sha }}
 
       - name: Install GitHub CLI
         run: sudo apt-get update && sudo apt-get install -y gh
