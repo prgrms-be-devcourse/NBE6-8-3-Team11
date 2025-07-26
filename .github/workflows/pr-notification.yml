@@ -2,10 +2,16 @@ name: PR Notification
 
 on:
   pull_request_target:
-    types: [opened, ready_for_review, synchronize]
+    types: [opened, ready_for_review, synchronize, reopened]
     branches:
       - main
       - develop
+  # 문제 해결을 위한 push 이벤트도 추가
+  push:
+    branches:
+      - 'feat/**'
+      - 'fix/**'
+      - 'hotfix/**'
   workflow_dispatch:
     inputs:
       pr_number:
@@ -26,29 +32,7 @@ jobs:
         run: |
           cat << 'EOF' > manual_test.json
           {
-            "blocks": [
-              {
-                "type": "header",
-                "text": {
-                  "type": "plain_text",
-                  "text": "🧪 수동 테스트 - Slack 알림"
-                }
-              },
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "*PR 번호*\n<https://github.com/${{ github.repository }}/pull/${{ inputs.pr_number }}|#${{ inputs.pr_number }}>"
-                }
-              },
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "*상태*\n✅ 수동 테스트 성공"
-                }
-              }
-            ]
+            "text": "🧪 수동 테스트 성공! PR #${{ inputs.pr_number }} 알림 기능이 작동합니다!"
           }
           EOF
           
@@ -57,6 +41,49 @@ jobs:
             "$SLACK_WEBHOOK_URL"
           
           echo "수동 테스트 알림 전송 완료!"
+
+  # Push 이벤트로 PR 찾기
+  find-pr-and-notify:
+    name: Find PR and Notify
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' }}
+    steps:
+      - name: Find PR for this push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 현재 브랜치의 PR 찾기
+          pr_number=$(gh pr list --head "${{ github.ref_name }}" --json number -q '.[0].number')
+          
+          if [ "$pr_number" != "null" ] && [ -n "$pr_number" ]; then
+            echo "PR_NUMBER=$pr_number" >> $GITHUB_ENV
+            echo "Found PR #$pr_number for branch ${{ github.ref_name }}"
+          else
+            echo "No PR found for this push, skipping notification"
+            exit 0
+          fi
+
+      - name: Wait for CI and Send Notification
+        if: ${{ env.PR_NUMBER }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          echo "Waiting for CI to complete for PR #${{ env.PR_NUMBER }}..."
+          sleep 30
+          
+          # Slack 알림 전송
+          cat << 'EOF' > push_notification.json
+          {
+            "text": "🔔 PR 업데이트: #${{ env.PR_NUMBER }} 브랜치에 새 커밋이 푸시되었습니다!"
+          }
+          EOF
+          
+          curl -X POST -H 'Content-type: application/json' \
+            --data @push_notification.json \
+            "$SLACK_WEBHOOK_URL"
+          
+          echo "Push 알림 전송 완료!"
 
   # CI 작업들이 완료되었는지 확인하는 Job
   wait-for-ci:
