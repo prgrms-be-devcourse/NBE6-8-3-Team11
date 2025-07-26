@@ -6,6 +6,12 @@ on:
     branches:
       - main
       - develop
+  # 본인 PR 테스트를 위한 일반 pull_request 이벤트 추가
+  pull_request:
+    types: [opened, ready_for_review, synchronize, reopened]
+    branches:
+      - main
+      - develop
   workflow_dispatch:
     inputs:
       pr_number:
@@ -41,7 +47,8 @@ jobs:
   simple-notify:
     name: Simple Slack Notify  
     runs-on: ubuntu-latest
-    if: ${{ !github.event.pull_request.draft }}
+    # pull_request와 pull_request_target 둘 다 지원
+    if: ${{ !github.event.pull_request.draft && secrets.SLACK_WEBHOOK_URL != '' }}
     steps:
       # CI 완료까지 대기 (간단한 방법)
       - name: Wait for CI completion
