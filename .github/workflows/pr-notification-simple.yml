@@ -31,8 +31,8 @@ jobs:
             source_info="🏠 본 저장소에서"
           fi
           
-          # 예쁜 Block Kit 메시지로 전송
-          cat << EOF > slack_message.json
+          # 안전한 Block Kit 메시지로 전송
+          cat << 'EOF' > slack_message.json
 {
   "blocks": [
     {
@@ -46,7 +46,7 @@ jobs:
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "*제목*\n\`\`\`$pr_title\`\`\`"
+        "text": "*제목*\n```TITLE_PLACEHOLDER```"
       }
     },
     {
@@ -54,15 +54,15 @@ jobs:
       "fields": [
         {
           "type": "mrkdwn",
-          "text": "*작성자*\n👤 @$pr_author"
+          "text": "*작성자*\n👤 @AUTHOR_PLACEHOLDER"
         },
         {
           "type": "mrkdwn",
-          "text": "*PR 번호*\n<$pr_url|#$pr_number>"
+          "text": "*PR 번호*\n<URL_PLACEHOLDER|#NUMBER_PLACEHOLDER>"
         },
         {
           "type": "mrkdwn",
-          "text": "*소스*\n$source_info"
+          "text": "*소스*\nSOURCE_PLACEHOLDER"
         },
         {
           "type": "mrkdwn",
@@ -80,7 +80,7 @@ jobs:
             "text": "리뷰하러 가기 🚀"
           },
           "style": "primary",
-          "url": "$pr_url"
+          "url": "URL_PLACEHOLDER"
         },
         {
           "type": "button",
@@ -88,7 +88,7 @@ jobs:
             "type": "plain_text",
             "text": "변경사항 보기 📝"
           },
-          "url": "$pr_url/files"
+          "url": "URL_PLACEHOLDER/files"
         }
       ]
     },
@@ -104,6 +104,13 @@ jobs:
   ]
 }
 EOF
+          
+          # 플레이스홀더 교체
+          sed -i "s/TITLE_PLACEHOLDER/$pr_title/g" slack_message.json
+          sed -i "s/AUTHOR_PLACEHOLDER/$pr_author/g" slack_message.json
+          sed -i "s/NUMBER_PLACEHOLDER/$pr_number/g" slack_message.json
+          sed -i "s|URL_PLACEHOLDER|$pr_url|g" slack_message.json
+          sed -i "s/SOURCE_PLACEHOLDER/$source_info/g" slack_message.json
           
           curl -X POST -H 'Content-type: application/json' \
             --data @slack_message.json \
