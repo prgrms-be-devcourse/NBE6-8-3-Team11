@@ -3,6 +3,10 @@ on:
   pull_request:
     branches:
       - develop
+  # Fork에서도 알림 가능하도록 추가
+  pull_request_target:
+    branches:
+      - develop
 jobs:
   backend-build:
     name: Backend - Build
@@ -81,3 +85,116 @@ jobs:
         run: npm run lint
       - name: Build Frontend
         run: npm run build
+
+  # CI 완료 후 Slack 알림
+  notify-slack:
+    name: Notify Slack
+    runs-on: ubuntu-latest
+    needs:
+      - backend-test
+      - frontend-check
+    # 조건: CI 성공 + Secrets 있음 + (Fork면 pull_request_target, 본저장소면 pull_request)
+    if: ${{ success() && secrets.SLACK_WEBHOOK_URL != '' && ((github.event_name == 'pull_request_target') || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false)) }}
+    steps:
+      - name: Send Slack Notification
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          pr_title="${{ github.event.pull_request.title }}"
+          pr_url="${{ github.event.pull_request.html_url }}"
+          pr_author="${{ github.event.pull_request.user.login }}"
+          pr_number="${{ github.event.pull_request.number }}"
+          
+          # Fork 여부 확인
+          if [ "${{ github.event.pull_request.head.repo.fork }}" = "true" ]; then
+            source_info="🔀 Fork"
+          else
+            source_info="🏠 Main Repo"
+          fi
+          
+          # 예쁜 Block Kit 메시지 생성
+          cat << 'EOF' > slack_message.json
+          {
+            "blocks": [
+              {
+                "type": "header",
+                "text": {
+                  "type": "plain_text",
+                  "text": "🔔 새로운 PR 리뷰 요청!"
+                }
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*제목*\n```TITLE_PLACEHOLDER```"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*작성자*\n👤 @AUTHOR_PLACEHOLDER"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*PR 번호*\n<URL_PLACEHOLDER|#NUMBER_PLACEHOLDER>"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*소스*\nSOURCE_PLACEHOLDER"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*상태*\n✅ CI 테스트 통과"
+                  }
+                ]
+              },
+              {
+                "type": "actions",
+                "elements": [
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "리뷰하러 가기 🚀"
+                    },
+                    "style": "primary",
+                    "url": "URL_PLACEHOLDER"
+                  },
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "변경사항 보기 📝"
+                    },
+                    "url": "URL_PLACEHOLDER/files"
+                  }
+                ]
+              },
+              {
+                "type": "context",
+                "elements": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "💡 모든 CI 테스트가 통과했습니다!"
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+          
+          # 플레이스홀더 교체
+          sed -i "s/TITLE_PLACEHOLDER/$pr_title/g" slack_message.json
+          sed -i "s/AUTHOR_PLACEHOLDER/$pr_author/g" slack_message.json
+          sed -i "s/NUMBER_PLACEHOLDER/$pr_number/g" slack_message.json
+          sed -i "s|URL_PLACEHOLDER|$pr_url|g" slack_message.json
+          sed -i "s/SOURCE_PLACEHOLDER/$source_info/g" slack_message.json
+          
+          curl -X POST -H 'Content-type: application/json' \
+            --data @slack_message.json \
+            "$SLACK_WEBHOOK_URL"
+          
+          echo "✅ CI 완료 후 Slack 알림 전송 완료!"
