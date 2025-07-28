@@ -63,3 +63,6 @@ tasks.withType<Test> {
 tasks.withType<JavaCompile> {
     options.compilerArgs.add("-parameters")
 }
+
+    // Actuator for health checks and monitoring
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
