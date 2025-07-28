@@ -48,7 +48,7 @@ apiClient.interceptors.response.use(
           }
           return apiClient(originalRequest);
         }
-      } catch (refreshError) {
+      } catch {
         // 리프레시 토큰도 만료된 경우 로그인 페이지로 리다이렉트
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');

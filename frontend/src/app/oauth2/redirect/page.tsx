@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function OAuth2RedirectPage() {
+function OAuth2RedirectContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [isProcessing, setIsProcessing] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -23,7 +22,6 @@ export default function OAuth2RedirectPage() {
     } else {
       // 토큰이 없으면 에러 상태로 설정하고 3초 후 홈으로 리다이렉트
       setError('로그인에 실패했습니다. 다시 시도해주세요.');
-      setIsProcessing(false);
       
       // 3초 후 홈으로 리다이렉트
       setTimeout(() => {
@@ -52,5 +50,20 @@ export default function OAuth2RedirectPage() {
         <p className="text-gray-600">로그인 처리 중...</p>
       </div>
     </div>
+  );
+}
+
+export default function OAuth2RedirectPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">로딩 중...</p>
+        </div>
+      </div>
+    }>
+      <OAuth2RedirectContent />
+    </Suspense>
   );
 } 
