@@ -65,7 +65,10 @@ public class SecurityConfig {
                                 "/api/auth/**", // 회원가입, 로그인 등 포함
                                 "/ws-chat/**", // WebSocket 엔드포인트 허용
                                 "/login/oauth2/code/**",
-                                "/oauth2/**"
+                                "/oauth2/**",
+                                "/actuator/health", // Docker 헬스체크용(도커체크용)
+                                "/health",          // 커스텀 헬스체크(도커체크용)
+                                "/ping"             // 단순 ping(도커체크용)
                         ).permitAll()
 
                         // 관리자 전용 경로

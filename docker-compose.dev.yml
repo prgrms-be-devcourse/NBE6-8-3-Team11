@@ -1,0 +1,57 @@
+# Development environment with hot reload and debugging
+version: '3.8'
+
+services:
+  # Only database services for development
+  # Backend and Frontend run locally for hot reload
+  
+  mysql:
+    image: mysql:8.0
+    container_name: petmatching-mysql-dev
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-devpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-petmatching_dev}
+      MYSQL_USER: ${MYSQL_USERNAME:-dev_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-devpassword}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_dev_data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - petmatching-dev
+
+  redis:
+    image: redis:7-alpine
+    container_name: petmatching-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - petmatching-dev
+
+  # Redis Commander for development
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: petmatching-redis-commander-dev
+    restart: unless-stopped
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - petmatching-dev
+
+volumes:
+  mysql_dev_data:
+  redis_dev_data:
+
+networks:
+  petmatching-dev:
+    driver: bridge
