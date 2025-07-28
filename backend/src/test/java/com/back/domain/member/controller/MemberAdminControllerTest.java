@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -77,7 +76,7 @@ class MemberAdminControllerTest {
 
     @Test
     @DisplayName("사용자 본인 정보 조회 성공")
-    void getMemberInfo_success() throws Exception {
+    void t1() throws Exception {
         mockMvc.perform(get("/api/members/{memberId}", userId)
                         .header("Authorization", userToken))
                 .andExpect(status().isOk())
@@ -88,32 +87,32 @@ class MemberAdminControllerTest {
 
     @Test
     @DisplayName("관리자가 전체 회원 목록 조회 성공")
-    void getAllMembers_asAdmin_success() throws Exception {
+    void t2() throws Exception {
         mockMvc.perform(get("/api/admin/members")
                         .header("Authorization", adminToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content.length()").value(2))
-                .andDo(print());
+                .andExpect(jsonPath("$.content.length()").value(2));
+
     }
 
     @Test
     @DisplayName("관리자가 특정 회원 정보 조회 성공")
-    void getMember_asAdmin_success() throws Exception {
+    void t3() throws Exception {
         mockMvc.perform(get("/api/admin/members/{memberId}", userId)
                         .header("Authorization", adminToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content.email").value("user@test.com"))
-                .andDo(print());
+                .andExpect(jsonPath("$.content.email").value("user@test.com"));
+
     }
 
     @Test
     @DisplayName("관리자가 특정 회원 강제 탈퇴 성공")
-    void deleteMember_asAdmin_success() throws Exception {
+    void t4() throws Exception {
         mockMvc.perform(delete("/api/admin/members/{memberId}", userId)
                         .header("Authorization", adminToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("해당 회원을 삭제했습니다."))
-                .andDo(print());
+                .andExpect(jsonPath("$.message").value("해당 회원을 삭제했습니다."));
+
 
         boolean isUserPresent = memberRepository.findById(userId).isPresent();
         assertThat(isUserPresent).isFalse();
@@ -121,7 +120,7 @@ class MemberAdminControllerTest {
 
     @Test
     @DisplayName("일반 유저가 관리자 API 호출시 Forbidden")
-    void accessAdminApi_asUser_fail() throws Exception {
+    void t5() throws Exception {
         mockMvc.perform(get("/api/admin/members")
                         .header("Authorization", userToken))
                 .andExpect(status().isForbidden());
