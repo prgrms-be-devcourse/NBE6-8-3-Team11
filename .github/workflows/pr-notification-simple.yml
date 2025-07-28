@@ -1,0 +1,119 @@
+name: Simple PR Notification
+
+on:
+  pull_request_target:
+    types: [opened, ready_for_review, synchronize, reopened]
+    branches:
+      - main
+      - develop
+
+jobs:
+  notify:
+    name: Simple Slack Notify
+    runs-on: ubuntu-latest
+    # Fork에서도 실행되도록 조건 완화
+    if: ${{ !github.event.pull_request.draft }}
+    steps:
+      - name: Send Simple Slack Notification
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          # 간단한 알림 메시지
+          pr_title="${{ github.event.pull_request.title }}"
+          pr_url="${{ github.event.pull_request.html_url }}"
+          pr_author="${{ github.event.pull_request.user.login }}"
+          pr_number="${{ github.event.pull_request.number }}"
+          
+          # Fork 여부 확인
+          if [ "${{ github.event.pull_request.head.repo.fork }}" = "true" ]; then
+            source_info="🔀 Fork에서"
+          else
+            source_info="🏠 본 저장소에서"
+          fi
+          
+          # 안전한 Block Kit 메시지로 전송
+          cat << 'EOF' > slack_message.json
+{
+  "blocks": [
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "🔔 새로운 PR 등록!"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*제목*\n```TITLE_PLACEHOLDER```"
+      }
+    },
+    {
+      "type": "section",
+      "fields": [
+        {
+          "type": "mrkdwn",
+          "text": "*작성자*\n👤 @AUTHOR_PLACEHOLDER"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "*PR 번호*\n<URL_PLACEHOLDER|#NUMBER_PLACEHOLDER>"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "*소스*\nSOURCE_PLACEHOLDER"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "*상태*\n⏳ 리뷰 대기중"
+        }
+      ]
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "리뷰하러 가기 🚀"
+          },
+          "style": "primary",
+          "url": "URL_PLACEHOLDER"
+        },
+        {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "변경사항 보기 📝"
+          },
+          "url": "URL_PLACEHOLDER/files"
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "💡 Fork에서도 알림이 정상 작동합니다!"
+        }
+      ]
+    }
+  ]
+}
+EOF
+          
+          # 플레이스홀더 교체
+          sed -i "s/TITLE_PLACEHOLDER/$pr_title/g" slack_message.json
+          sed -i "s/AUTHOR_PLACEHOLDER/$pr_author/g" slack_message.json
+          sed -i "s/NUMBER_PLACEHOLDER/$pr_number/g" slack_message.json
+          sed -i "s|URL_PLACEHOLDER|$pr_url|g" slack_message.json
+          sed -i "s/SOURCE_PLACEHOLDER/$source_info/g" slack_message.json
+          
+          curl -X POST -H 'Content-type: application/json' \
+            --data @slack_message.json \
+            "$SLACK_WEBHOOK_URL"
+          
+          echo "Fork PR 알림 전송 완료!"
