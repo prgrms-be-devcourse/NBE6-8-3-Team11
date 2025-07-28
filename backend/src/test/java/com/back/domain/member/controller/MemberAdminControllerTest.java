@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -91,7 +92,8 @@ class MemberAdminControllerTest {
         mockMvc.perform(get("/api/admin/members")
                         .header("Authorization", adminToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content.length()").value(2));
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andDo(print());
     }
 
     @Test
@@ -100,7 +102,8 @@ class MemberAdminControllerTest {
         mockMvc.perform(get("/api/admin/members/{memberId}", userId)
                         .header("Authorization", adminToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content.email").value("user@test.com"));
+                .andExpect(jsonPath("$.content.email").value("user@test.com"))
+                .andDo(print());
     }
 
     @Test
@@ -109,7 +112,8 @@ class MemberAdminControllerTest {
         mockMvc.perform(delete("/api/admin/members/{memberId}", userId)
                         .header("Authorization", adminToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("해당 회원을 삭제했습니다."));
+                .andExpect(jsonPath("$.message").value("해당 회원을 삭제했습니다."))
+                .andDo(print());
 
         boolean isUserPresent = memberRepository.findById(userId).isPresent();
         assertThat(isUserPresent).isFalse();
