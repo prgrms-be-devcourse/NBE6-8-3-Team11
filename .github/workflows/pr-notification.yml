@@ -133,9 +133,9 @@ jobs:
           EOF
           
           # 플레이스홀더 교체
-          sed -i "s/TITLE_PLACEHOLDER/$pr_title/g" slack_message.json
-          sed -i "s/AUTHOR_PLACEHOLDER/$pr_author/g" slack_message.json
-          sed -i "s/NUMBER_PLACEHOLDER/$pr_number/g" slack_message.json
+          sed -i "s|TITLE_PLACEHOLDER|$pr_title|g" slack_message.json
+          sed -i "s|AUTHOR_PLACEHOLDER|$pr_author|g" slack_message.json
+          sed -i "s|NUMBER_PLACEHOLDER|$pr_number|g" slack_message.json
           sed -i "s|URL_PLACEHOLDER|$pr_url|g" slack_message.json
           
           curl -X POST -H 'Content-type: application/json' \
