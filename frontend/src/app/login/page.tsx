@@ -72,7 +72,7 @@ export default function LoginPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* 아이디 입력 */}
+              {/* 아이디(이메일) 입력 */}
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
                   아이디
@@ -85,7 +85,7 @@ export default function LoginPage() {
                   value={formData.username}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
-                  placeholder="아이디를 입력하세요"
+                  placeholder="아이디(이메일)를/을 입력하세요"
                 />
               </div>
 
@@ -162,7 +162,7 @@ export default function LoginPage() {
               </div>
               <div className="text-sm text-gray-600">
                 계정이 없으신가요?{' '}
-                <a href="#" className="text-orange-600 hover:text-orange-700 font-medium">
+                <a href="/signup" className="text-orange-600 hover:text-orange-700 font-medium">
                   회원가입
                 </a>
               </div>
