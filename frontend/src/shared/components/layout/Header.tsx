@@ -59,7 +59,8 @@ export default function Header() {
             <span className="text-xl font-bold text-gray-800">{BRAND_INFO.name}</span>
           </div>
           
-          <nav className="hidden md:flex space-x-8">
+          {/* 가운데: 네비게이션 (항상 중앙 고정) */}
+          <nav className="hidden md:flex space-x-8 absolute left-1/2 transform -translate-x-1/2">
             {NAV_ITEMS.map((item) => (
               <Link
                 key={item.href}
@@ -71,6 +72,7 @@ export default function Header() {
             ))}
           </nav>
           
+          {/* 오른쪽: 사용자 메뉴 */}
           <div className="flex items-center space-x-4">
             {!isLoading && (
               <>
