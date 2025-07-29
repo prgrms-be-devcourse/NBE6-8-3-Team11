@@ -42,23 +42,25 @@ export default function Header() {
   const { user, isLoading, logout } = useAuth();
   const pathname = usePathname();
 
-  const handleKakaoLogin = () => {
-    // 백엔드의 OAuth2 엔드포인트로 리다이렉트
-    window.location.href = 'http://localhost:8080/oauth2/authorization/kakao';
-  };
-
   return (
     <header className="bg-white/80 backdrop-blur-sm border-b border-orange-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">{BRAND_INFO.logo}</span>
+            <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center">
+              <Image
+                src="/DolBomZ4.jpg"
+                alt="DolBömZ 로고"
+                width={32}
+                height={32}
+                className="w-full h-full object-cover"
+              />
             </div>
             <span className="text-xl font-bold text-gray-800">{BRAND_INFO.name}</span>
           </div>
           
-          <nav className="hidden md:flex space-x-8">
+          {/* 가운데: 네비게이션 (항상 중앙 고정) */}
+          <nav className="hidden md:flex space-x-8 absolute left-1/2 transform -translate-x-1/2">
             {NAV_ITEMS.map((item) => (
               <Link
                 key={item.href}
@@ -70,6 +72,7 @@ export default function Header() {
             ))}
           </nav>
           
+          {/* 오른쪽: 사용자 메뉴 */}
           <div className="flex items-center space-x-4">
             {!isLoading && (
               <>
@@ -97,19 +100,17 @@ export default function Header() {
                     </button>
                   </div>
                 ) : (
-                  // 로그인하지 않은 상태: 카카오 로그인 버튼
-                  <button 
-                    onClick={handleKakaoLogin}
-                    className="hover:opacity-80 transition-opacity"
+                  // 로그인하지 않은 상태: 로그인 버튼
+                  <Link
+                    href="/login"
+                    className={`px-4 py-2 rounded-full font-semibold text-sm transition-all duration-200 ${
+                      pathname === '/login'
+                        ? 'bg-orange-500 text-white shadow-md'
+                        : 'bg-orange-100 text-orange-600 hover:bg-orange-200 hover:shadow-md hover:scale-105'
+                    }`}
                   >
-                    <Image
-                      src="/kakao_login_medium_narrow.png"
-                      alt="카카오 로그인"
-                      width={183}
-                      height={45}
-                      className="cursor-pointer"
-                    />
-                  </button>
+                    로그인
+                  </Link>
                 )}
               </>
             )}
