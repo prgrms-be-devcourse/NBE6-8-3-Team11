@@ -150,11 +150,16 @@ jobs:
           }
           EOF
           
-          # 플레이스홀더 교체
-          sed -i "s|TITLE_PLACEHOLDER|$pr_title|g" slack_message.json
-          sed -i "s|AUTHOR_PLACEHOLDER|$pr_author|g" slack_message.json
+          # 플레이스홀더 교체 (특수문자 안전 처리)
+          # 변수 이스케이프 처리
+          escaped_title=$(printf '%s\n' "$pr_title" | sed 's/[[\.*^$()+?{|]/\\&/g')
+          escaped_author=$(printf '%s\n' "$pr_author" | sed 's/[[\.*^$()+?{|]/\\&/g')
+          escaped_url=$(printf '%s\n' "$pr_url" | sed 's/[[\.*^$()+?{|]/\\&/g')
+          
+          sed -i "s|TITLE_PLACEHOLDER|$escaped_title|g" slack_message.json
+          sed -i "s|AUTHOR_PLACEHOLDER|$escaped_author|g" slack_message.json
           sed -i "s|NUMBER_PLACEHOLDER|$pr_number|g" slack_message.json
-          sed -i "s|URL_PLACEHOLDER|$pr_url|g" slack_message.json
+          sed -i "s|URL_PLACEHOLDER|$escaped_url|g" slack_message.json
           
           curl -X POST -H 'Content-type: application/json' \
             --data @slack_message.json \
