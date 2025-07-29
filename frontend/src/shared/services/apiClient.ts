@@ -1,5 +1,8 @@
 // API 클라이언트 설정
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+// 팀원들의 기존 환경과 호환성을 위한 우선순위 설정
+const API_BASE_URL = 
+  process.env.NEXT_PUBLIC_API_URL ||  // 환경변수 우선
+  'http://localhost:8080';             // Docker 환경 기본값
 
 interface ApiResponse<T> {
   data: T;
@@ -18,13 +21,16 @@ class ApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
-    const url = `${this.baseURL}${endpoint}`;
+    // API 엔드포인트가 /api로 시작하지 않으면 추가
+    const normalizedEndpoint = endpoint.startsWith('/api') ? endpoint : `/api${endpoint}`;
+    const url = `${this.baseURL}${normalizedEndpoint}`;
     
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
         ...options.headers,
       },
+      credentials: 'include', // Include cookies for authentication
       ...options,
     };
 
@@ -66,4 +72,4 @@ class ApiClient {
   }
 }
 
-export const apiClient = new ApiClient(API_BASE_URL); 
+export const apiClient = new ApiClient(API_BASE_URL);
