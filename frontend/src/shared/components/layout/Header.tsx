@@ -42,11 +42,6 @@ export default function Header() {
   const { user, isLoading, logout } = useAuth();
   const pathname = usePathname();
 
-  const handleKakaoLogin = () => {
-    // 백엔드의 OAuth2 엔드포인트로 리다이렉트
-    window.location.href = 'http://localhost:8080/oauth2/authorization/kakao';
-  };
-
   return (
     <header className="bg-white/80 backdrop-blur-sm border-b border-orange-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -97,19 +92,17 @@ export default function Header() {
                     </button>
                   </div>
                 ) : (
-                  // 로그인하지 않은 상태: 카카오 로그인 버튼
-                  <button 
-                    onClick={handleKakaoLogin}
-                    className="hover:opacity-80 transition-opacity"
+                  // 로그인하지 않은 상태: 로그인 링크
+                  <Link
+                    href="/login"
+                    className={`text-sm font-medium transition-colors ${
+                      pathname === '/login'
+                        ? 'text-orange-600'
+                        : 'text-gray-700 hover:text-orange-500'
+                    }`}
                   >
-                    <Image
-                      src="/kakao_login_medium_narrow.png"
-                      alt="카카오 로그인"
-                      width={183}
-                      height={45}
-                      className="cursor-pointer"
-                    />
-                  </button>
+                    로그인
+                  </Link>
                 )}
               </>
             )}
