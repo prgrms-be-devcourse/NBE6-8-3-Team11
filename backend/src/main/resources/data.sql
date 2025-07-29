@@ -6,6 +6,9 @@ INSERT INTO member (member_email, member_password, member_name, member_phone, me
 VALUES ('user1@example.com', '$2a$10$LgL4qLhG2M.B3Z4mP3qX.e.O3B.Q.C.C.N.U.R.A.Q.I.E.F.E.I.D.M.A.C.M.O.K.0', '김철수', '010-1111-2222', 'USER', NOW());
 
 INSERT INTO member (member_email, member_password, member_name, member_phone, member_role, created_at)
+VALUES ('hello@world.com', '$ex_member_password', '홍길동', '010-7777-7777', 'USER', NOW());
+
+INSERT INTO member (member_email, member_password, member_name, member_phone, member_role, created_at)
 VALUES ('shelter@example.com', '$2a$10$LgL4qLhG2M.B3Z4mP3qX.e.O3B.Q.C.C.N.U.R.A.Q.I.E.F.E.I.D.M.A.C.M.O.K.0', '행복보호소관리자', '010-3333-4444', 'USER', NOW());
 -- 실제 비밀번호는 암호화하여 사용해야 합니다. 위 예시는 임시 값입니다.
 
