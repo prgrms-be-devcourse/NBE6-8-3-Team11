@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { BRAND_INFO, CONTACT_INFO } from '../../constants';
 
 export default function Footer() {
@@ -8,8 +9,14 @@ export default function Footer() {
         <div className="grid md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-sm">{BRAND_INFO.logo}</span>
+              <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center">
+                <Image
+                  src="/DolBomZ4.jpg"
+                  alt="DolBömZ 로고"
+                  width={32}
+                  height={32}
+                  className="w-full h-full object-cover"
+                />
               </div>
               <span className="text-xl font-bold">{BRAND_INFO.name}</span>
             </div>
