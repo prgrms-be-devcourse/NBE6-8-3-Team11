@@ -16,7 +16,6 @@ public record NotificationResponseDto (
         LocalDateTime createdAt
 ){
     public static NotificationResponseDto from(Notification notification) {
-
         return NotificationResponseDto.builder()
                 .notificationId(notification.getId())
                 .type(notification.getType())

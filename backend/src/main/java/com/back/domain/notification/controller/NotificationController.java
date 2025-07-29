@@ -29,7 +29,6 @@ public class NotificationController {
                 ApiResponse.success(notifications));
     }
 
-    @DeleteMapping("/{notificationId}")
     @Operation(summary = "알림 삭제", description = "사용자의 알림을 삭제합니다")
     public ResponseEntity<ApiResponse<Void>> deleteNotification(
             @PathVariable Long notificationId,
