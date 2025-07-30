@@ -99,7 +99,12 @@ export default function SignupPage() {
         password: formData.password,
         name: formData.name,
         phone: formData.phone,
-      }) as any;
+      }) as unknown as {
+        success: boolean;
+        code: string;
+        message: string;
+        content?: any;
+      };
       
       console.log('회원가입 응답:', response);
       

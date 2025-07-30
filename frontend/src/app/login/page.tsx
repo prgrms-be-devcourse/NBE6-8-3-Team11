@@ -17,13 +17,6 @@ interface LoginResponse {
   userName: string;
 }
 
-interface ApiResponse<T> {
-  success: boolean;
-  code: string;
-  message: string;
-  content: T;
-}
-
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
@@ -51,7 +44,12 @@ export default function LoginPage() {
       const response = await apiClient.post<LoginResponse>('/auth/login', {
         email: formData.username,
         password: formData.password,
-      }) as any;
+      }) as unknown as {
+        success: boolean;
+        code: string;
+        message: string;
+        content: LoginResponse;
+      };
       
       if (response.success && response.content) {
         console.log('로그인 성공:', response.content);
