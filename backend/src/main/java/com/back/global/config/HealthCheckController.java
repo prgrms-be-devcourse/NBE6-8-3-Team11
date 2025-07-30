@@ -14,6 +14,11 @@ import java.util.Map;
  * Docker 헬스체크용 간단한 컨트롤러
  * GlobalExceptionHandler의 영향을 받지 않는 별도 엔드포인트
  */
+@CrossOrigin(origins = {
+        "http://localhost:3000",              // 로컬 개발
+        "https://*.vercel.app",               // Vercel 배포 도메인
+        "https://vercel.app"                  // Vercel 기본 도메인
+})
 @RestController
 public class HealthCheckController {
 
