@@ -12,23 +12,34 @@ spring:
       max-lifetime: 1800000
       maximum-pool-size: 10
 
-  # JPA 설정
+  # JPA 설정 - 강제 테이블 생성
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: false
+      ddl-auto: create-drop
+    show-sql: true
+    defer-datasource-initialization: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: false
-        highlight_sql: false
-        use_sql_comments: false
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
 
-  # Redis 설정 (선택사항 - Railway Redis 추가 시에만 사용)
-  # data:
-  #   redis:
-  #     url: ${REDIS_URL}
-  #     timeout: 6000ms
+  # SQL 초기화 비활성화 (Railway용)
+  sql:
+    init:
+      mode: never
+
+  # Redis 설정 (Railway에서는 비활성화)
+  data:
+    redis:
+      url: ${REDIS_URL:redis://localhost:6379}
+      timeout: 6000ms
+  # Redis 자동 설정 비활성화 (Railway 전용)
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
 
   # 보안 설정
   security:
@@ -63,14 +74,14 @@ cookie:
 server:
   port: ${PORT:8080}
 
-# 로깅 설정 (프로덕션)
+# 로깅 설정 - PostgreSQL 디버깅
 logging:
   level:
-    com.back: INFO
-    org.hibernate.SQL: WARN
-    org.hibernate.orm.jdbc.bind: WARN
-    org.springframework.transaction.interceptor: WARN
-    org.springframework.security: WARN
+    com.back: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: DEBUG
+    org.springframework.transaction.interceptor: DEBUG
+    org.springframework.security: INFO
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
