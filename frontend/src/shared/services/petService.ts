@@ -1,54 +1,33 @@
 import { apiClient } from './apiClient';
 import { Pet } from '../types';
 
-export interface GetPetsParams {
-  page?: number;
-  limit?: number;
-  type?: string;
-  size?: string;
-  gender?: string;
-}
-
-export interface GetPetsResponse {
-  pets: Pet[];
-  total: number;
-  page: number;
-  limit: number;
-}
-
 export const petService = {
   // 모든 동물 조회
-  async getPets(params: GetPetsParams = {}): Promise<GetPetsResponse> {
-    const queryParams = new URLSearchParams();
-    
-    if (params.page) queryParams.append('page', params.page.toString());
-    if (params.limit) queryParams.append('limit', params.limit.toString());
-    if (params.type) queryParams.append('type', params.type);
-    if (params.size) queryParams.append('size', params.size);
-    if (params.gender) queryParams.append('gender', params.gender);
-    
-    const queryString = queryParams.toString();
-    const endpoint = `/pets${queryString ? `?${queryString}` : ''}`;
-    
-    const response = await apiClient.get<GetPetsResponse>(endpoint);
+  async getPets(): Promise<Pet[]> {
+    const response = await apiClient.get<Pet[]>('/api/pets');
     return response.data;
   },
 
   // 특정 동물 조회
-  async getPet(id: string): Promise<Pet> {
-    const response = await apiClient.get<Pet>(`/pets/${id}`);
+  async getPet(petId: string): Promise<Pet> {
+    const response = await apiClient.get<Pet>(`/api/pets/${petId}`);
     return response.data;
   },
 
-  // 동물 검색
-  async searchPets(query: string): Promise<Pet[]> {
-    const response = await apiClient.get<Pet[]>(`/pets/search?q=${encodeURIComponent(query)}`);
+  // 동물 생성
+  async createPet(petData: Omit<Pet, 'id'>): Promise<Pet> {
+    const response = await apiClient.post<Pet>('/api/pets', petData);
     return response.data;
   },
 
-  // 입양 신청
-  async applyForAdoption(petId: string, applicationData: unknown): Promise<unknown> {
-    const response = await apiClient.post(`/pets/${petId}/apply`, applicationData);
+  // 특정 동물 정보 수정
+  async updatePet(petId: string, petData: Partial<Pet>): Promise<Pet> {
+    const response = await apiClient.put<Pet>(`/api/pets/${petId}`, petData);
     return response.data;
+  },
+
+  // 특정 동물 삭제
+  async deletePet(petId: string): Promise<void> {
+    await apiClient.delete(`/api/pets/${petId}`);
   },
 }; 

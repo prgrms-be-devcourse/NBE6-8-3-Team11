@@ -2,6 +2,13 @@
 
 ## 📋 Mock 데이터 삭제 및 API 교체 순서
 
+
+## 수정사항
+```
+1. animalService -> petService 로 변경
+
+```
+
 ### **1단계: API 클라이언트 및 타입 준비**
 ```
 1. src/shared/services/ 에 API 엔드포인트 함수들 생성
