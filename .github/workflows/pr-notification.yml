@@ -4,7 +4,6 @@ on:
   pull_request_target:
     types: [opened, ready_for_review, synchronize, reopened]
     branches:
-      - main
       - develop
 
 jobs:
@@ -14,58 +13,14 @@ jobs:
     # Fork에서만 실행
     if: ${{ !github.event.pull_request.draft && github.event.pull_request.head.repo.fork == true }}
     steps:
-      - name: Wait for CI completion and check status
+      - name: Wait for CI completion
         run: |
-          echo "CI 완료를 기다리고 상태를 확인하는 중..."
-          
-          # 최대 5분 대기
-          max_wait=300
-          wait_time=0
-          
-          while [ $wait_time -lt $max_wait ]; do
-            sleep 30
-            wait_time=$((wait_time + 30))
-            echo "대기 시간: ${wait_time}초"
-            
-            # 3분 후부터 CI 상태 확인 시작
-            if [ $wait_time -ge 180 ]; then
-              echo "CI 상태 확인 중..."
-              
-              # GitHub CLI로 PR 체크 상태 확인
-              checks=$(gh pr checks ${{ github.event.pull_request.number }} --json conclusion,name 2>/dev/null || echo "[]")
-              
-              # 결과가 있는지 확인
-              if [ "$checks" != "[]" ] && [ "$checks" != "" ]; then
-                # 실패한 체크가 있는지 확인
-                failed_checks=$(echo "$checks" | jq -r '.[] | select(.conclusion == "FAILURE") | .name' 2>/dev/null || echo "")
-                
-                if [ -n "$failed_checks" ]; then
-                  echo "❌ 실패한 CI가 있습니다: $failed_checks"
-                  echo "알림을 보내지 않습니다."
-                  exit 0
-                fi
-                
-                # 모든 필수 CI가 완료되었는지 확인 (성공 또는 스킵)
-                completed_checks=$(echo "$checks" | jq -r '.[] | select(.conclusion == "SUCCESS" or .conclusion == "SKIPPED") | .name' 2>/dev/null || echo "")
-                
-                if echo "$completed_checks" | grep -q "Backend\|Frontend"; then
-                  echo "✅ CI가 성공적으로 완료되었습니다."
-                  break
-                fi
-              fi
-              
-              echo "CI가 아직 진행 중입니다..."
-            fi
-          done
-          
-          echo "CI 상태 확인 완료"
+          echo "Fork PR CI 완료를 기다리는 중..."
+          # CI가 완료될 때까지 간단히 대기 (2분)
+          sleep 120
+          echo "CI 대기 완료"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Install GitHub CLI
-        run: |
-          # GitHub CLI가 이미 설치되어 있지만 확인
-          gh --version || (sudo apt-get update && sudo apt-get install -y gh)
 
       - name: Send Fork Slack Notification
         env:
@@ -132,11 +87,15 @@ jobs:
           }
           EOF
           
-          # 플레이스홀더 교체
-          sed -i "s/TITLE_PLACEHOLDER/$pr_title/g" slack_message.json
-          sed -i "s/AUTHOR_PLACEHOLDER/$pr_author/g" slack_message.json
-          sed -i "s/NUMBER_PLACEHOLDER/$pr_number/g" slack_message.json
-          sed -i "s|URL_PLACEHOLDER|$pr_url|g" slack_message.json
+          # 플레이스홀더 교체 (특수문자 안전 처리)
+          escaped_title=$(printf '%s\n' "$pr_title" | sed 's/[[\.*^$()+?{|]/\\&/g')
+          escaped_author=$(printf '%s\n' "$pr_author" | sed 's/[[\.*^$()+?{|]/\\&/g')
+          escaped_url=$(printf '%s\n' "$pr_url" | sed 's/[[\.*^$()+?{|]/\\&/g')
+          
+          sed -i "s|TITLE_PLACEHOLDER|$escaped_title|g" slack_message.json
+          sed -i "s|AUTHOR_PLACEHOLDER|$escaped_author|g" slack_message.json
+          sed -i "s|NUMBER_PLACEHOLDER|$pr_number|g" slack_message.json
+          sed -i "s|URL_PLACEHOLDER|$escaped_url|g" slack_message.json
           
           curl -X POST -H 'Content-type: application/json' \
             --data @slack_message.json \
