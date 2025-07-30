@@ -104,7 +104,7 @@ export default function Header() {
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          strokeWidth={1.5} // 버튼 두께 조정
+                          strokeWidth={1.5}
                           d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"
                         />
                       </svg>
@@ -114,6 +114,33 @@ export default function Header() {
                         {/* 추후 알림 개수에 따라 표시 */}
                       </span>
                     </button>
+                    
+                    {/* 채팅 버튼 */}
+                    <Link
+                      href="/allchat"
+                      className="relative p-2 text-gray-600 hover:text-orange-500 transition-colors"
+                      title="채팅"
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                        />
+                      </svg>
+                      
+                      {/* 새 메시지 표시 배지 (새 메시지가 있을 때만 표시) */}
+                      <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full opacity-0">
+                        {/* 추후 새 메시지 개수에 따라 표시 */}
+                      </span>
+                    </Link>
                     
                     <Link
                       href="/profile"
