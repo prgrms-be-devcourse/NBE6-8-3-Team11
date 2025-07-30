@@ -5,7 +5,9 @@ import com.back.domain.care.dto.response.CareResponseDto;
 import com.back.domain.care.service.CareService;
 import com.back.global.common.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,7 +27,7 @@ public class CareController {
     @PostMapping("/applies/care")
     @Operation(summary = "돌봄 신청", description = "돌봄 신청을 처리합니다.")
     public ResponseEntity<ApiResponse<CareResponseDto>> applyCare(
-            @RequestBody CareRequestDto careRequestDto,
+            @Valid @RequestBody CareRequestDto careRequestDto,
             @AuthenticationPrincipal UserDetails userDetails) {
         CareResponseDto careResponseDto = careService.applyCare(careRequestDto, userDetails.getUsername());
         // 알람은 추후 구현
