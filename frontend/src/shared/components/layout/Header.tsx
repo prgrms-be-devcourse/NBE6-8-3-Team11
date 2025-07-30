@@ -114,7 +114,6 @@ export default function Header() {
                       <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full opacity-0">
                       </span>
                     </button>
-                    {/* ▲▲▲▲▲ 팀원이 추가한 알림 버튼 ▲▲▲▲▲ */}
 
                     {/* 채팅 버튼 */}
                     <Link
