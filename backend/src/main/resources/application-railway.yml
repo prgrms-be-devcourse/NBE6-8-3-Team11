@@ -30,12 +30,7 @@ spring:
     init:
       mode: never
 
-  # Redis 설정 (Railway에서는 비활성화)
-  data:
-    redis:
-      url: ${REDIS_URL:redis://localhost:6379}
-      timeout: 6000ms
-  # Redis 자동 설정 비활성화 (Railway 전용)
+  # 전체 Chat 패키지 스캔 제외 (Railway 전용)
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
