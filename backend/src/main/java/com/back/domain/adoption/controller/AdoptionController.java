@@ -8,6 +8,7 @@ import com.back.domain.adoption.dto.response.ApplicationSimpleListResponseDto;
 import com.back.domain.adoption.service.AdoptionService;
 import com.back.global.common.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +35,7 @@ public class AdoptionController {
     @PostMapping("/adoption")
     @Operation(summary = "입양 신청", description = "입양 신청을 처리합니다.")
     public ResponseEntity<ApiResponse<AdoptionResponseDto>> applyAdoption(
-            @RequestBody AdoptionRequestDto adoptionRequestDto,
+            @Valid @RequestBody AdoptionRequestDto adoptionRequestDto,
             @AuthenticationPrincipal UserDetails userDetails) {
         AdoptionResponseDto adoptionResponseDto = adoptionService.applyAdoption(adoptionRequestDto, userDetails.getUsername());
         // 알람은 추후 구현
@@ -114,7 +115,7 @@ public class AdoptionController {
     @Operation(summary = "보호자가 받은 입양/돌봄 신청 내역 상태 변경 - 수락/거절(ACCEPTED/REJECTED)",
             description = "보호자가 받은 입양 및 돌봄 신청 내역의 상태를 변경(수락/거절)합니다.")
     public ResponseEntity<ApiResponse<Void>> updateReceivedApplicationStatus(
-            @RequestBody AdoptionCareStatusUpdateRequestDto requestDto,
+            @Valid @RequestBody AdoptionCareStatusUpdateRequestDto requestDto,
             @AuthenticationPrincipal UserDetails userDetails) {
         adoptionService.updateReceivedApplicationStatus(requestDto, userDetails.getUsername());
         return ResponseEntity.status(HttpStatus.OK).body(
