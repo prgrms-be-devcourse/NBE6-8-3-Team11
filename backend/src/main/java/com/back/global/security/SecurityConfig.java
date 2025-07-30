@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // CORS 설정 적용 ⭐ 이 부분 추가
+                // CORS 설정 적용
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 // H2 콘솔 사용을 위한 설정
@@ -50,35 +50,41 @@ public class SecurityConfig {
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
                 )
 
-                // API 경로별 접근 권한 설정
+                //연동과정에서 모든 request 허용
                 .authorizeHttpRequests(auth -> auth
-                        // 개발 편의 기능 및 인증 없이 접근해야 하는 경로들
-                        .requestMatchers(
-                                "/",
-                                "/favicon.ico",
-                                "/h2-console/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/v3/api-docs/**",
-                                "/swagger-resources/**",
-                                "/webjars/**",
-                                "/api/auth/**", // 회원가입, 로그인 등 포함
-                                "/ws-chat/**",
-                                "/ws-notification",// WebSocket 엔드포인트 허용
-                                "/api/pets/**", 
-                                "/login/oauth2/code/**",
-                                "/oauth2/**",
-                                "/actuator/health", // Docker 헬스체크용(도커체크용)
-                                "/health",          // 커스텀 헬스체크(도커체크용)
-                                "/ping"            // 단순 ping(도커체크용)
-                        ).permitAll()
-
-                        // 관리자 전용 경로
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
-                        // 위에서 설정한 경로 외 나머지 모든 경로는 인증 요구
-                        .anyRequest().authenticated()
+                        // 모든 요청을 허용하도록 변경
+                        .anyRequest().permitAll()
                 )
+
+//                // API 경로별 접근 권한 설정
+//                .authorizeHttpRequests(auth -> auth
+                 // 개발 편의 기능 및 인증 없이 접근해야 하는 경로들
+//                        .requestMatchers(
+//                                "/",
+//                                "/favicon.ico",
+//                                "/h2-console/**",
+//                                "/swagger-ui/**",
+//                                "/swagger-ui.html",
+//                                "/v3/api-docs/**",
+//                                "/swagger-resources/**",
+//                                "/webjars/**",
+//                                "/api/auth/**", // 회원가입, 로그인 등 포함
+//                                "/ws-chat/**",
+//                                "/ws-notification",// WebSocket 엔드포인트 허용
+//                                "/api/pets/**",
+//                                "/login/oauth2/code/**",
+//                                "/oauth2/**",
+//                                "/actuator/health", // Docker 헬스체크용(도커체크용)
+//                                "/health",          // 커스텀 헬스체크(도커체크용)
+//                                "/ping"            // 단순 ping(도커체크용)
+//                        ).permitAll()
+//
+//                        // 관리자 전용 경로
+//                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+//
+//                        // 위에서 설정한 경로 외 나머지 모든 경로는 인증 요구
+//                        .anyRequest().authenticated()
+//                )
                 //카카오톡 oauth2설정
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo
