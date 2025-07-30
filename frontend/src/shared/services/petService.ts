@@ -1,7 +1,7 @@
 import { apiClient } from './apiClient';
 import { Pet } from '../types';
 
-export interface GetAnimalsParams {
+export interface GetPetsParams {
   page?: number;
   limit?: number;
   type?: string;
@@ -9,16 +9,16 @@ export interface GetAnimalsParams {
   gender?: string;
 }
 
-export interface GetAnimalsResponse {
-  animals: Pet[];
+export interface GetPetsResponse {
+  pets: Pet[];
   total: number;
   page: number;
   limit: number;
 }
 
-export const animalService = {
+export const petService = {
   // 모든 동물 조회
-  async getAnimals(params: GetAnimalsParams = {}): Promise<GetAnimalsResponse> {
+  async getPets(params: GetPetsParams = {}): Promise<GetPetsResponse> {
     const queryParams = new URLSearchParams();
     
     if (params.page) queryParams.append('page', params.page.toString());
@@ -28,27 +28,27 @@ export const animalService = {
     if (params.gender) queryParams.append('gender', params.gender);
     
     const queryString = queryParams.toString();
-    const endpoint = `/animals${queryString ? `?${queryString}` : ''}`;
+    const endpoint = `/pets${queryString ? `?${queryString}` : ''}`;
     
-    const response = await apiClient.get<GetAnimalsResponse>(endpoint);
+    const response = await apiClient.get<GetPetsResponse>(endpoint);
     return response.data;
   },
 
   // 특정 동물 조회
-  async getAnimal(id: string): Promise<Pet> {
-    const response = await apiClient.get<Pet>(`/animals/${id}`);
+  async getPet(id: string): Promise<Pet> {
+    const response = await apiClient.get<Pet>(`/pets/${id}`);
     return response.data;
   },
 
   // 동물 검색
-  async searchAnimals(query: string): Promise<Pet[]> {
-    const response = await apiClient.get<Pet[]>(`/animals/search?q=${encodeURIComponent(query)}`);
+  async searchPets(query: string): Promise<Pet[]> {
+    const response = await apiClient.get<Pet[]>(`/pets/search?q=${encodeURIComponent(query)}`);
     return response.data;
   },
 
   // 입양 신청
-  async applyForAdoption(animalId: string, applicationData: unknown): Promise<unknown> {
-    const response = await apiClient.post(`/animals/${animalId}/apply`, applicationData);
+  async applyForAdoption(petId: string, applicationData: unknown): Promise<unknown> {
+    const response = await apiClient.post(`/pets/${petId}/apply`, applicationData);
     return response.data;
   },
 }; 
