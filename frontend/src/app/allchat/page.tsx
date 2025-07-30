@@ -13,7 +13,8 @@ interface Message {
 
 interface ChatRoom {
   id: number;
-  name: string;
+  guardianName: string;
+  shelterName?: string;
   lastMessage: string;
   lastMessageTime: Date;
   unreadCount: number;
@@ -46,24 +47,34 @@ export default function AllChatPage() {
   const [chatRooms] = useState<ChatRoom[]>([
     {
       id: 1,
-      name: '사랑의 동물보호소',
+      guardianName: '김보호',
+      shelterName: '사랑의 동물보호소',
       lastMessage: '멍멍이 입양에 대해 궁금한 점이 있어요.',
       lastMessageTime: new Date(),
       unreadCount: 1
     },
     {
       id: 2,
-      name: '희망의 동물보호소',
+      guardianName: '이돌봄',
+      shelterName: '희망의 동물보호소',
       lastMessage: '나비 입양 절차를 안내드리겠습니다.',
       lastMessageTime: new Date(Date.now() - 3600000),
       unreadCount: 0
     },
     {
       id: 3,
-      name: '따뜻한 동물보호소',
+      guardianName: '박사랑',
+      shelterName: '따뜻한 동물보호소',
       lastMessage: '토토의 건강상태는 양호합니다.',
       lastMessageTime: new Date(Date.now() - 7200000),
       unreadCount: 2
+    },
+    {
+      id: 4,
+      guardianName: '최동물',
+      lastMessage: '새로운 가족을 찾고 있어요.',
+      lastMessageTime: new Date(Date.now() - 10800000),
+      unreadCount: 0
     }
   ]);
 
@@ -98,7 +109,7 @@ export default function AllChatPage() {
             <div className="w-1/3 border-r border-gray-200">
               <div className="p-4 border-b border-gray-200">
                 <h2 className="text-lg font-semibold text-gray-900">채팅</h2>
-                <p className="text-sm text-gray-600">보호소와 1:1 상담</p>
+                <p className="text-sm text-gray-600">보호자와 1:1 상담</p>
               </div>
               
               <div className="overflow-y-auto h-full">
@@ -112,7 +123,10 @@ export default function AllChatPage() {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
-                        <h3 className="font-medium text-gray-900">{room.name}</h3>
+                        <h3 className="font-medium text-gray-900">{room.guardianName}</h3>
+                        {room.shelterName && (
+                          <p className="text-xs text-gray-500">{room.shelterName}</p>
+                        )}
                         <p className="text-sm text-gray-600 truncate">{room.lastMessage}</p>
                         <p className="text-xs text-gray-500">
                           {room.lastMessageTime.toLocaleTimeString('ko-KR', {
@@ -139,9 +153,13 @@ export default function AllChatPage() {
                   {/* 채팅 헤더 */}
                   <div className="p-4 border-b border-gray-200">
                     <h3 className="font-semibold text-gray-900">
-                      {chatRooms.find(room => room.id === selectedChat)?.name}
+                      {chatRooms.find(room => room.id === selectedChat)?.guardianName}
                     </h3>
-                    <p className="text-sm text-gray-600">1:1 상담</p>
+                    {chatRooms.find(room => room.id === selectedChat)?.shelterName && (
+                      <p className="text-sm text-gray-600">
+                        {chatRooms.find(room => room.id === selectedChat)?.shelterName}
+                      </p>
+                    )}
                   </div>
 
                   {/* 메시지 영역 */}
@@ -202,7 +220,7 @@ export default function AllChatPage() {
                       채팅방을 선택하세요
                     </h3>
                     <p className="text-gray-600">
-                      왼쪽에서 상담하고 싶은 보호소를 선택해주세요
+                      왼쪽에서 상담하고 싶은 보호자를 선택해주세요
                     </p>
                   </div>
                 </div>
