@@ -28,13 +28,11 @@ export default function GalleryPage() {
     const loadPets = async () => {
       try {
         setLoading(true);
-        console.log('API 에서 펫 정보 fetch...');
         const petsData = await petService.getPets();
-        console.log('API 응답:', petsData);
         setPets(petsData);
         setFilteredPets(petsData);
       } catch (err) {
-        console.error('API 에러:', err);
+        console.error('API Error:', err);
         setError('동물 정보를 불러오는데 실패했습니다.');
       } finally {
         setLoading(false);

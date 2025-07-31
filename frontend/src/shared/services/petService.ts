@@ -4,10 +4,7 @@ import { Pet } from '../types';
 export const petService = {
   // 모든 동물 조회
   async getPets(): Promise<Pet[]> {
-    console.log('petService.getPets() 호출됨');
     const response = await apiClient.get<Pet[]>('/api/pets');
-    console.log('API 클라이언트 응답:', response);
-    console.log('response.content:', response.content);
     return response.content;
   },
 
