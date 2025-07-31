@@ -57,16 +57,20 @@ export default function LoginPage() {
       // 로그인 성공 시 즉시 홈페이지로 이동
       router.push('/');
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log('로그인 에러:', error);
       
       // 에러 메시지 처리
       let errorMessage = '로그인에 실패했습니다. 다시 시도해주세요.';
       
-      if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error.message) {
-        errorMessage = error.message;
+      if (error && typeof error === 'object' && 'response' in error) {
+        const errorResponse = error as { response?: { data?: { message?: string } } };
+        if (errorResponse.response?.data?.message) {
+          errorMessage = errorResponse.response.data.message;
+        }
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        const errorObj = error as { message: string };
+        errorMessage = errorObj.message;
       }
       
       setError(errorMessage);

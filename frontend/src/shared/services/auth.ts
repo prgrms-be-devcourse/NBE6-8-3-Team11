@@ -10,7 +10,7 @@ interface JoinRequest {
   password: string;
   name: string;
   phone?: string;
-  [key: string]: any;
+  [key: string]: string | undefined;
 }
 
 interface AuthResponse {
@@ -33,7 +33,7 @@ export const authService = {
         phone: userData.phone,
       });
       return response.content;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log('Backend 서버 오류로 인해 Mock 응답을 반환합니다:', error);
       // Backend 서버 문제가 해결될 때까지 Mock 응답
       return {
@@ -58,7 +58,7 @@ export const authService = {
       }
       
       return response.content;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log('Backend 서버 오류로 인해 Mock 응답을 반환합니다:', error);
       // Backend 서버 문제가 해결될 때까지 Mock 응답
       const mockResponse: AuthResponse = {

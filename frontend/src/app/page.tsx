@@ -13,7 +13,7 @@ import Footer from '../shared/components/layout/Footer';
 
 export default function Home() {
   const [pets, setPets] = useState<Pet[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadPets = async () => {
@@ -24,7 +24,7 @@ export default function Home() {
         console.error('Failed to load pets for preview:', error);
         setPets([]); // 에러 시 빈 배열로 설정
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
