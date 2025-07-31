@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '../../shared/components/layout/Header';
 import Footer from '../../shared/components/layout/Footer';
-import { Pet, Shelter } from '../../shared/types';
+import { Pet } from '../../shared/types';
 import { formatAnimalAge, formatAnimalGender, formatAnimalSpecies } from '../../shared/utils';
 import { petService } from '../../shared/services/petService';
 import { adoptionService } from '../../shared/services/adoptionService';
@@ -162,7 +162,11 @@ function ApplyPageContent() {
                 <p className="text-sm text-gray-600 mb-2">
                   {formatAnimalSpecies(selectedPet.species)} • {formatAnimalAge(selectedPet.age)} • {formatAnimalGender(selectedPet.gender)}
                 </p>
-                <p className="text-sm text-gray-500">보호소 ID: {selectedPet.shelterId}</p>
+                {selectedPet.shelterName ? (
+                  <p className="text-sm text-gray-500">보호소: {selectedPet.shelterName}</p>
+                ) : (
+                  <p className="text-sm text-gray-500">보호소 정보 없음</p>
+                )}
               </div>
             </div>
           </div>

@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import Header from '../../../shared/components/layout/Header';
 import Footer from '../../../shared/components/layout/Footer';
 import { petService } from '../../../shared/services/petService';
-import { Pet, Shelter } from '../../../shared/types';
+import { Pet } from '../../../shared/types';
 import { formatAnimalAge, formatAnimalGender, formatAnimalSpecies } from '../../../shared/utils';
 import Image from 'next/image';
 
@@ -13,7 +13,6 @@ export default function AnimalDetailPage() {
   const params = useParams();
   const router = useRouter();
   const [pet, setPet] = useState<Pet | null>(null);
-  const [shelter, setShelter] = useState<Shelter | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,13 +24,6 @@ export default function AnimalDetailPage() {
         setIsLoading(true);
         const petData = await petService.getPet(params.id as string);
         setPet(petData);
-        
-        // 보호소 정보도 함께 로드 (API에서 관계 데이터로 제공된다고 가정)
-        // 실제로는 petData.shelter가 포함되어 있을 수 있음
-        if (petData.shelterId) {
-          // shelterService가 있다면 사용, 없으면 petData에서 추출
-          setShelter(petData as any); // 임시로 petData를 shelter로 사용
-        }
       } catch (err) {
         setError('동물 정보를 불러오는데 실패했습니다.');
         console.error('Failed to load pet:', err);
@@ -146,13 +138,11 @@ export default function AnimalDetailPage() {
             </div>
 
             {/* 보호소 정보 */}
-            {shelter && (
+            {pet.shelterName && (
               <div className="bg-orange-50 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">보호소 정보</h3>
                 <div className="space-y-2 text-sm">
-                  <div><span className="font-medium">보호소명:</span> {shelter.name}</div>
-                  <div><span className="font-medium">주소:</span> {shelter.address}</div>
-                  <div><span className="font-medium">연락처:</span> {shelter.phone}</div>
+                  <div><span className="font-medium">보호소명:</span> {pet.shelterName}</div>
                 </div>
               </div>
             )}
