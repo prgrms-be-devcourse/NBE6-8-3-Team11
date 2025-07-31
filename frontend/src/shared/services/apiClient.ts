@@ -5,9 +5,10 @@ const API_BASE_URL =
   'http://localhost:8080';             // Docker 환경 기본값
 
 interface ApiResponse<T> {
-  data: T;
+  content: T;
   message: string;
   success: boolean;
+  code: string;
 }
 
 class ApiClient {

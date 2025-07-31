@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Pet } from '@/shared/types';
-import { MOCK_PETS } from '@/shared/constants';
+import { petService } from '@/shared/services/petService';
 import Header from '@/shared/components/layout/Header';
 import Footer from '@/shared/components/layout/Footer';
 import AnimalGrid from '@/features/gallery/components/AnimalGrid';
@@ -23,18 +23,17 @@ export default function GalleryPage() {
   });
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Mock 데이터 로드 (API 서버 대신)
+  // API에서 동물 데이터 로드
   useEffect(() => {
     const loadPets = async () => {
       try {
         setLoading(true);
-        // API 호출 대신 Mock 데이터 사용
-        await new Promise(resolve => setTimeout(resolve, 500)); // 로딩 시뮬레이션
-        setPets(MOCK_PETS);
-        setFilteredPets(MOCK_PETS);
+        const petsData = await petService.getPets();
+        setPets(petsData);
+        setFilteredPets(petsData);
       } catch (err) {
+        console.error('API Error:', err);
         setError('동물 정보를 불러오는데 실패했습니다.');
-        console.error('Failed to load pets:', err);
       } finally {
         setLoading(false);
       }
@@ -45,6 +44,8 @@ export default function GalleryPage() {
 
   // 필터링 및 검색 적용
   useEffect(() => {
+    if (!pets || pets.length === 0) return;
+    
     let filtered = [...pets];
 
     // 검색 필터
@@ -156,7 +157,7 @@ export default function GalleryPage() {
                   필터 초기화
                 </button>
                 <span className="text-sm text-gray-500">
-                  {filteredPets.length}마리 발견
+                  {filteredPets?.length || 0}마리 발견
                 </span>
               </div>
             </div>
@@ -172,7 +173,7 @@ export default function GalleryPage() {
 
         {/* 동물 그리드 */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-          {filteredPets.length === 0 ? (
+          {!filteredPets || filteredPets.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-gray-400 text-6xl mb-4">🐾</div>
               <h3 className="text-xl font-semibold text-gray-600 mb-2">

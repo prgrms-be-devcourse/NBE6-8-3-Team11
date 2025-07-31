@@ -4,10 +4,10 @@ export interface Pet {
   name: string;
   species: string; // dog, cat, rabbit, bird, other
   age: number;
-  gender: 'male' | 'female';
+  gender: 'MALE' | 'FEMALE';
   description: string;
   imageUrl?: string;
-  shelterId: number;
+  shelterName?: string; // Backend DTO에서 제공하는 보호소 이름
   memberIdCreatedBy: number;
   createdAt: Date;
 }
