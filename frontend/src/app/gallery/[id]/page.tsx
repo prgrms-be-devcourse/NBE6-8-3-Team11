@@ -4,8 +4,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Header from '../../../shared/components/layout/Header';
 import Footer from '../../../shared/components/layout/Footer';
-import { MOCK_PETS, MOCK_SHELTERS } from '../../../shared/constants';
-import { Pet } from '../../../shared/types';
+import { petService } from '../../../shared/services/petService';
+import { Pet, Shelter } from '../../../shared/types';
 import { formatAnimalAge, formatAnimalGender, formatAnimalSpecies } from '../../../shared/utils';
 import Image from 'next/image';
 
@@ -13,14 +13,34 @@ export default function AnimalDetailPage() {
   const params = useParams();
   const router = useRouter();
   const [pet, setPet] = useState<Pet | null>(null);
+  const [shelter, setShelter] = useState<Shelter | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!params?.id) return;
-    setIsLoading(true);
-    const found = MOCK_PETS.find((p) => p.id === Number(params.id));
-    setPet(found || null);
-    setIsLoading(false);
+    
+    const loadPetData = async () => {
+      try {
+        setIsLoading(true);
+        const petData = await petService.getPet(params.id as string);
+        setPet(petData);
+        
+        // 보호소 정보도 함께 로드 (API에서 관계 데이터로 제공된다고 가정)
+        // 실제로는 petData.shelter가 포함되어 있을 수 있음
+        if (petData.shelterId) {
+          // shelterService가 있다면 사용, 없으면 petData에서 추출
+          setShelter(petData as any); // 임시로 petData를 shelter로 사용
+        }
+      } catch (err) {
+        setError('동물 정보를 불러오는데 실패했습니다.');
+        console.error('Failed to load pet:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadPetData();
   }, [params?.id]);
 
   if (isLoading) {
@@ -35,22 +55,22 @@ export default function AnimalDetailPage() {
     );
   }
 
-  if (!pet) {
+  if (error || !pet) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <div className="text-6xl mb-4">🐾</div>
           <h2 className="text-2xl font-bold mb-2">동물을 찾을 수 없습니다</h2>
-          <p className="text-gray-500 mb-6">존재하지 않는 동물입니다.</p>
+          <p className="text-gray-500 mb-6">
+            {error || '존재하지 않는 동물입니다.'}
+          </p>
           <button onClick={() => router.push('/gallery')} className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors">목록으로 돌아가기</button>
         </div>
         <Footer />
       </div>
     );
   }
-
-  const shelter = MOCK_SHELTERS.find((s) => s.id === pet.shelterId);
 
   return (
     <div className="min-h-screen bg-gray-50">

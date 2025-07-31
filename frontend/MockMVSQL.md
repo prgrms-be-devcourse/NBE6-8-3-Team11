@@ -6,6 +6,7 @@
 ## 수정사항
 ```
 1. animalService -> petService 로 변경
+2. notification.ts -> [0731] 추가
 
 ```
 
@@ -23,9 +24,10 @@
    - Backend API 응답 구조에 맞는 인터페이스 생성
 ```
 
-### **2단계: 중앙 Mock 데이터 삭제**
+### **2단계: 중앙 Mock 데이터 삭제** 
 ```
-1. src/shared/constants/index.ts
+[0731] 완료
+1. src/shared/constants/index.ts 
    - MOCK_SHELTERS 삭제
    - MOCK_MEMBERS 삭제  
    - MOCK_PETS 삭제
