@@ -1,9 +1,21 @@
 [phases.setup]
 nixPkgs = ["openjdk21"]
 
-[phases.build]
+[phases.install]
 dependsOn = ["setup"]
-cmds = ["chmod +x gradlew", "./gradlew clean build -x test --no-daemon --refresh-dependencies"]
+cmds = ["echo 'Setting up Java environment'"]
+
+[phases.build]
+dependsOn = ["install"]
+cmds = [
+    "cd backend",
+    "export JAVA_HOME=$(readlink -f /usr/bin/java | sed 's:bin/java::')",
+    "chmod +x gradlew", 
+    "./gradlew build -x test --no-daemon"
+]
 
 [start]
-cmd = "java -Dspring.profiles.active=railway -jar build/libs/*.jar"
+cmd = "cd backend && java -Dspring.profiles.active=railway -jar build/libs/*.jar"
+
+[variables]
+JAVA_HOME = "/nix/var/nix/profiles/default"
