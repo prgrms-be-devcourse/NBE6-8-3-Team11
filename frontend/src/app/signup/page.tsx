@@ -10,7 +10,7 @@ interface SignupFormData {
   email: string;
   password: string;
   confirmPassword: string;
-  nickname: string;
+  name: string;
   phone: string;
 }
 
@@ -24,7 +24,7 @@ export default function SignupPage() {
     email: '',
     password: '',
     confirmPassword: '',
-    nickname: '',
+    name: '',
     phone: '',
   });
 
@@ -40,7 +40,7 @@ export default function SignupPage() {
 
   const validateForm = (): boolean => {
     // 기본 필드 검증
-    if (!formData.email || !formData.password || !formData.nickname || !formData.phone) {
+    if (!formData.email || !formData.password || !formData.name || !formData.phone) {
       setError('모든 필수 항목을 입력해주세요.');
       return false;
     }
@@ -71,9 +71,9 @@ export default function SignupPage() {
       return false;
     }
 
-    // 닉네임 형식 검증
-    if (formData.nickname.trim().length < 2) {
-      setError('닉네임은 최소 2자 이상이어야 합니다.');
+    // 이름 형식 검증
+    if (formData.name.trim().length < 2) {
+      setError('이름은 최소 2자 이상이어야 합니다.');
       return false;
     }
 
@@ -97,7 +97,7 @@ export default function SignupPage() {
       const response = await authService.join({
         email: formData.email,
         password: formData.password,
-        nickname: formData.nickname,
+        name: formData.name,
         phone: formData.phone,
       });
       
@@ -160,20 +160,20 @@ export default function SignupPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* 닉네임 입력 */}
+              {/* 이름 입력 */}
               <div>
-                <label htmlFor="nickname" className="block text-sm font-medium text-gray-700 mb-2">
-                  닉네임 *
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                  이름 *
                 </label>
                 <input
-                  id="nickname"
-                  name="nickname"
+                  id="name"
+                  name="name"
                   type="text"
                   required
-                  value={formData.nickname}
+                  value={formData.name}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
-                  placeholder="닉네임을 입력하세요"
+                  placeholder="이름을 입력하세요"
                 />
               </div>
 
