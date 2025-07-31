@@ -293,7 +293,7 @@ function ApplyPageContent() {
             <div className="pt-6 border-t border-gray-200 space-y-4">
               <button
                 type="button"
-                onClick={() => router.push(`/chat?shelterId=${selectedPet.shelterId}&petId=${selectedPet.id}`)}
+                onClick={() => router.push(`/chat?petId=${selectedPet.id}`)}
                 className="w-full py-3 px-6 rounded-lg font-semibold text-lg border-2 border-orange-500 text-orange-500 hover:bg-orange-50 transition-colors"
               >
                 상담하기

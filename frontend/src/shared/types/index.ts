@@ -7,7 +7,6 @@ export interface Pet {
   gender: 'MALE' | 'FEMALE';
   description: string;
   imageUrl?: string;
-  shelterId: number;
   shelterName?: string; // Backend DTO에서 제공하는 보호소 이름
   memberIdCreatedBy: number;
   createdAt: Date;

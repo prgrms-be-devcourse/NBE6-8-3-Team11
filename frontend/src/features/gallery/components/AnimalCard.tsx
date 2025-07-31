@@ -60,7 +60,11 @@ export default function AnimalCard({ pet }: AnimalCardProps) {
 
         {/* 보호소 정보 */}
         <div className="text-xs text-gray-500 mb-4">
-          <p>보호소 ID: {pet.shelterId}</p>
+          {pet.shelterName ? (
+            <p>보호소: {pet.shelterName}</p>
+          ) : (
+            <p>보호소 정보 없음</p>
+          )}
         </div>
 
         {/* 액션 버튼 */}
