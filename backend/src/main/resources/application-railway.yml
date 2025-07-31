@@ -68,6 +68,10 @@ jwt:
 cookie:
   secure: true
 
+# 채팅 기능 비활성화 (Railway용)
+chat:
+  enabled: false
+
 # 서버 설정
 server:
   port: ${PORT:8080}

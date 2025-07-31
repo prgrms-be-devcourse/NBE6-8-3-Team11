@@ -34,8 +34,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Profile("!railway") // Railway 환경에서는 채팅 서비스 비활성화
-@ConditionalOnProperty(name = "spring.data.redis.host")
+@ConditionalOnProperty(name = "chat.enabled", havingValue = "true", matchIfMissing = false)
 public class ChatService {
 
     private final ChatRoomRepository chatRoomRepository;
