@@ -28,4 +28,4 @@ EXPOSE 10000
 
 # Set render profile for Render deployment
 ENV SPRING_PROFILES_ACTIVE=render
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Dserver.port=${PORT:-10000}", "-jar", "app.jar"]
