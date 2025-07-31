@@ -110,14 +110,31 @@ export default function SignupPage() {
       
     } catch (error: any) {
       console.log('회원가입 에러:', error);
+      console.log('에러 상세 정보:', {
+        message: error.message,
+        response: error.response,
+        status: error.response?.status,
+        data: error.response?.data
+      });
       
       // 에러 메시지 처리
       let errorMessage = '회원가입 처리 중 오류가 발생했습니다. 다시 시도해주세요.';
       
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
       } else if (error.message) {
         errorMessage = error.message;
+      }
+      
+      // HTTP 상태 코드별 메시지
+      if (error.response?.status === 400) {
+        errorMessage = '입력 정보를 확인해주세요.';
+      } else if (error.response?.status === 409) {
+        errorMessage = '이미 존재하는 이메일입니다.';
+      } else if (error.response?.status === 500) {
+        errorMessage = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
       }
       
       setError(errorMessage);

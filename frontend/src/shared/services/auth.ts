@@ -9,6 +9,7 @@ interface JoinRequest {
   email: string;
   password: string;
   nickname: string;
+  phone: string;
   [key: string]: any;
 }
 
@@ -24,23 +25,19 @@ interface AuthResponse {
 
 export const authService = {
   // 회원가입
-  async join(userData: JoinRequest): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/auth/join', userData);
-    
-    // 회원가입 성공 시 토큰과 사용자 정보 저장
-    if (response.content.token) {
-      localStorage.setItem('accessToken', response.content.token);
-      localStorage.setItem('userId', response.content.user.id);
-      localStorage.setItem('userEmail', response.content.user.email);
-      localStorage.setItem('userName', response.content.user.nickname);
-    }
-    
+  async join(userData: JoinRequest): Promise<{ success: boolean; message: string }> {
+    const response = await apiClient.post<{ success: boolean; message: string }>('/api/auth/join', {
+      email: userData.email,
+      password: userData.password,
+      nickname: userData.nickname,
+      phone: userData.phone,
+    });
     return response.content;
   },
 
   // 로그인
   async login(credentials: LoginRequest): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/auth/login', credentials);
+    const response = await apiClient.post<AuthResponse>('/api/auth/login', credentials);
     
     // 로그인 성공 시 토큰과 사용자 정보 저장
     if (response.content.token) {
@@ -55,7 +52,7 @@ export const authService = {
 
   // 회원 탈퇴
   async deleteAccount(memberId: string): Promise<void> {
-    await apiClient.delete(`/auth/${memberId}`);
+    await apiClient.delete(`/api/auth/${memberId}`);
     
     // 회원 탈퇴 성공 시 로컬 스토리지에서 사용자 정보 제거
     localStorage.removeItem('accessToken');
