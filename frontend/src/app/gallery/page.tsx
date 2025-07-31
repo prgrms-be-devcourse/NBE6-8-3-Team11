@@ -44,6 +44,8 @@ export default function GalleryPage() {
 
   // 필터링 및 검색 적용
   useEffect(() => {
+    if (!pets || pets.length === 0) return;
+
     let filtered = [...pets];
 
     // 검색 필터
@@ -155,7 +157,7 @@ export default function GalleryPage() {
                   필터 초기화
                 </button>
                 <span className="text-sm text-gray-500">
-                  {filteredPets.length}마리 발견
+                  {filteredPets?.length || 0}마리 발견
                 </span>
               </div>
             </div>
@@ -171,7 +173,7 @@ export default function GalleryPage() {
 
         {/* 동물 그리드 */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-          {filteredPets.length === 0 ? (
+          {!filteredPets || filteredPets.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-gray-400 text-6xl mb-4">🐾</div>
               <h3 className="text-xl font-semibold text-gray-600 mb-2">
