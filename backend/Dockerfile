@@ -26,6 +26,6 @@ COPY --from=builder /app/build/libs/*.jar app.jar
 # Expose port
 EXPOSE 10000
 
-# Set production profile and run
-ENV SPRING_PROFILES_ACTIVE=prod
+# Set render profile for Render deployment
+ENV SPRING_PROFILES_ACTIVE=render
 ENTRYPOINT ["java", "-jar", "app.jar"]
