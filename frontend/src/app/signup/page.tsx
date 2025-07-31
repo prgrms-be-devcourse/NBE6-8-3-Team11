@@ -4,13 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '../../shared/components/layout/Header';
 import Footer from '../../shared/components/layout/Footer';
-import { apiClient } from '../../shared/services/apiClient';
+import { authService } from '../../shared/services/auth';
 
 interface SignupFormData {
   email: string;
   password: string;
   confirmPassword: string;
-  name: string;
+  nickname: string;
   phone: string;
 }
 
@@ -24,7 +24,7 @@ export default function SignupPage() {
     email: '',
     password: '',
     confirmPassword: '',
-    name: '',
+    nickname: '',
     phone: '',
   });
 
@@ -40,7 +40,7 @@ export default function SignupPage() {
 
   const validateForm = (): boolean => {
     // 기본 필드 검증
-    if (!formData.email || !formData.password || !formData.name || !formData.phone) {
+    if (!formData.email || !formData.password || !formData.nickname || !formData.phone) {
       setError('모든 필수 항목을 입력해주세요.');
       return false;
     }
@@ -71,9 +71,9 @@ export default function SignupPage() {
       return false;
     }
 
-    // 이름 형식 검증
-    if (formData.name.trim().length < 2) {
-      setError('이름은 최소 2자 이상이어야 합니다.');
+    // 닉네임 형식 검증
+    if (formData.nickname.trim().length < 2) {
+      setError('닉네임은 최소 2자 이상이어야 합니다.');
       return false;
     }
 
@@ -94,39 +94,33 @@ export default function SignupPage() {
     try {
       console.log('회원가입 시도:', formData);
       
-      const response = await apiClient.post('/auth/join', {
+      const response = await authService.join({
         email: formData.email,
         password: formData.password,
-        name: formData.name,
+        nickname: formData.nickname,
         phone: formData.phone,
-      }) as unknown as {
-        success: boolean;
-        code: string;
-        message: string;
-        content?: {
-          id: number;
-          email: string;
-          name: string;
-          phone: string;
-        };
-      };
+      });
       
-      console.log('회원가입 응답:', response);
+      console.log('회원가입 성공:', response);
+      setSuccess('회원가입이 성공적으로 완료되었습니다! 2초 후 로그인 페이지로 이동합니다.');
       
-      if (response.success) {
-        console.log('회원가입 성공!');
-        setSuccess('회원가입이 성공적으로 완료되었습니다! 2초 후 로그인 페이지로 이동합니다.');
-        
-        setTimeout(() => {
-          router.push('/login');
-        }, 2000);
-      } else {
-        console.log('회원가입 실패:', response);
-        setError(response.message || '회원가입에 실패했습니다.');
-      }
-    } catch (error) {
+      setTimeout(() => {
+        router.push('/login');
+      }, 2000);
+      
+    } catch (error: any) {
       console.log('회원가입 에러:', error);
-      setError('회원가입 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+      
+      // 에러 메시지 처리
+      let errorMessage = '회원가입 처리 중 오류가 발생했습니다. 다시 시도해주세요.';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -149,20 +143,20 @@ export default function SignupPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* 이름 입력 */}
+              {/* 닉네임 입력 */}
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                  이름 *
+                <label htmlFor="nickname" className="block text-sm font-medium text-gray-700 mb-2">
+                  닉네임 *
                 </label>
                 <input
-                  id="name"
-                  name="name"
+                  id="nickname"
+                  name="nickname"
                   type="text"
                   required
-                  value={formData.name}
+                  value={formData.nickname}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
-                  placeholder="이름을 입력하세요"
+                  placeholder="닉네임을 입력하세요"
                 />
               </div>
 
