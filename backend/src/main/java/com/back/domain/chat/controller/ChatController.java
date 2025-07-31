@@ -9,7 +9,6 @@ import com.back.global.common.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -25,7 +24,6 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/chat")
-@ConditionalOnProperty(name = "chat.enabled", havingValue = "true", matchIfMissing = false)
 public class ChatController {
 
     private final ChatService chatService;

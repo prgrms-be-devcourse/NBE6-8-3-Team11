@@ -64,10 +64,6 @@ jwt:
 cookie:
   secure: false
 
-# 채팅 기능 활성화 (로컬/개발 환경)
-chat:
-  enabled: true
-
 server:
   port: 8080
 
