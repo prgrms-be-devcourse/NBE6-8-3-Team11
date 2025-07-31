@@ -112,9 +112,9 @@ export default function SignupPage() {
       console.log('회원가입 에러:', error);
       console.log('에러 상세 정보:', {
         message: error instanceof Error ? error.message : 'Unknown error',
-        response: error && typeof error === 'object' && 'response' in error ? (error as any).response : undefined,
-        status: error && typeof error === 'object' && 'response' in error ? (error as any).response?.status : undefined,
-        data: error && typeof error === 'object' && 'response' in error ? (error as any).response?.data : undefined
+        response: error && typeof error === 'object' && 'response' in error ? (error as { response?: unknown }).response : undefined,
+        status: error && typeof error === 'object' && 'response' in error ? (error as { response?: { status?: number } }).response?.status : undefined,
+        data: error && typeof error === 'object' && 'response' in error ? (error as { response?: { data?: unknown } }).response?.data : undefined
       });
       
       // 에러 메시지 처리
