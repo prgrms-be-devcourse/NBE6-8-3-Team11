@@ -2,10 +2,10 @@ import { Pet } from '../../../shared/types';
 import { formatAnimalAge, formatAnimalGender } from '../../../shared/utils';
 
 interface GalleryPreviewProps {
-  pets: Pet[];
+  pets?: Pet[];
 }
 
-export default function GalleryPreview({ pets }: GalleryPreviewProps) {
+export default function GalleryPreview({ pets = [] }: GalleryPreviewProps) {
   return (
     <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto">
