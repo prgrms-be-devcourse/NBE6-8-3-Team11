@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Header from '../../shared/components/layout/Header';
 import Footer from '../../shared/components/layout/Footer';
-import { authService } from '../../shared/services/auth';
+import { memberService } from '../../shared/services/member';
 import { useAuth } from '../../shared/hooks/useAuth';
 
 export default function LoginPage() {
@@ -32,7 +32,7 @@ export default function LoginPage() {
     setIsLoading(true);
   
     try {
-      const response = await authService.login({
+      const response = await memberService.login({
         email: formData.email,
         password: formData.password,
       });
