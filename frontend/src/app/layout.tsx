@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+import { AuthProvider } from '../context/AuthContext'; // 경로에 맞게 수정
+import Header from '../shared/components/layout/Header'; // 헤더 컴포넌트 경로에 맞게 수정
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -23,11 +26,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+    <html lang="ko">
+      <body>
+        <AuthProvider>
+          <Header /> {/* Header 컴포넌트가 AuthContext를 사용할 수 있도록 Provider 내부에 위치 */}
+          <main>{children}</main>
+        </AuthProvider>
       </body>
     </html>
   );
