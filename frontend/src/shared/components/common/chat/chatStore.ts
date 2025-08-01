@@ -24,7 +24,7 @@ const createChatStore = () => {
   if (typeof window !== 'undefined') {
     return create<ChatState>()(
       persist(
-        (set, get) => ({
+        (set) => ({
           messages: {},
           chatRooms: [],
           currentRoom: null,
@@ -48,7 +48,6 @@ const createChatStore = () => {
           
           // 채팅방 메시지 로드 함수 추가
           loadRoomMessages: async (roomId: number) => {
-            const state = get();
             
             console.log(`Loading messages for room ${roomId}...`);
             set({ isLoading: true });
