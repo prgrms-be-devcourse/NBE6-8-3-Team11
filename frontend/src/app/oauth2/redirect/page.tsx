@@ -1,130 +1,75 @@
-'use client';
+'use client'; // 클라이언트 컴포넌트임을 명시합니다.
 
+import { useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
 
-// 동적 렌더링 강제
-export const dynamic = 'force-dynamic';
-
-function UserInfoDecoder() {
+export default function OAuth2RedirectHandler() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const accessToken = searchParams.get('accessToken');
-  const refreshToken = searchParams.get('refreshToken');
 
   useEffect(() => {
-    const handleOAuthLogin = async () => {
-      if (accessToken && refreshToken) {
-        try {
-          setIsLoading(true);
-          
-          // 토큰을 localStorage에 저장
-          localStorage.setItem('accessToken', accessToken);
-          localStorage.setItem('refreshToken', refreshToken);
-          
-          // JWT 토큰에서 사용자 정보 추출
-          let userInfo = null;
-          try {
-            const base64Url = accessToken.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const decodedString = atob(base64);
-            userInfo = JSON.parse(decodedString);
-            console.log('JWT에서 추출한 사용자 정보:', userInfo);
-          } catch (decodeError) {
-            console.error('JWT 디코딩 실패:', decodeError);
-          }
+    const accessToken = searchParams.get('accessToken');
+    const refreshToken = searchParams.get('refreshToken');
 
-          // 사용자 정보를 localStorage에 저장
-          if (userInfo) {
-            // JWT에서 사용자 정보 추출 (토큰 구조에 따라 조정)
-            const userId = userInfo.sub || userInfo.userId || userInfo.id || '1';
-            const userEmail = userInfo.email || userInfo.userEmail || 'oauth@example.com';
-            const userName = userInfo.name || userInfo.userName || userInfo.preferred_username || 'OAuth 사용자';
-            
-            localStorage.setItem('userId', userId.toString());
-            localStorage.setItem('userEmail', userEmail);
-            localStorage.setItem('userName', userName);
-            
-            console.log('저장된 사용자 정보:', {
-              userId: localStorage.getItem('userId'),
-              userEmail: localStorage.getItem('userEmail'),
-              userName: localStorage.getItem('userName')
-            });
-          } else {
-            // JWT 디코딩 실패 시 기본값 사용
-            localStorage.setItem('userId', '1');
-            localStorage.setItem('userEmail', 'oauth@example.com');
-            localStorage.setItem('userName', 'OAuth 사용자');
-          }
-          
-          // 홈으로 리다이렉트
-          router.push('/');
-          
-        } catch (error) {
-          console.error('OAuth 로그인 처리 중 오류:', error);
-          setError('로그인 처리 중 오류가 발생했습니다.');
-        } finally {
-          setIsLoading(false);
+    let userInfo = null;
+
+    if (accessToken) {
+      try {
+        const base64Url = accessToken.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const binaryString = atob(base64);
+
+        // 2. 바이너리 문자열을 Uint8Array로 변환 (바이트 배열)
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
         }
-      } else {
-        setError('토큰 정보가 없습니다.');
-        setIsLoading(false);
+
+        // 3. TextDecoder를 사용하여 Uint8Array를 UTF-8 문자열로 변환
+        const decodedString = new TextDecoder('utf-8').decode(bytes);
+        const decodedPayload = JSON.parse(decodedString);
+
+        // JWT 페이로드에서 필요한 정보들을 추출하여 userInfo 객체에 저장합니다.
+        // 예시 토큰에는 'nickname'과 'email'이 없으므로, 있다고 가정하고 추가했습니다.
+        // 실제 토큰에 따라 필드명을 조정하거나, 없는 경우 'N/A' 등으로 처리할 수 있습니다.
+        userInfo = {
+          sub: decodedPayload.sub,
+          auth: decodedPayload.auth,
+          exp: decodedPayload.exp,
+          // 예시: 닉네임과 이메일 필드가 토큰에 있다면 사용
+          nickname: decodedPayload.nickname || null, // 토큰에 없으면 null
+          email: decodedPayload.email || null,     // 토큰에 없으면 null
+          // 다른 필요한 정보가 있다면 여기에 추가
+        };
+
+        // 1. accessToken 저장
+        localStorage.setItem('accessToken', accessToken);
+        console.log('Access Token 저장 완료');
+
+        // 2. refreshToken 저장
+        if (refreshToken) {
+          localStorage.setItem('refreshToken', refreshToken);
+          console.log('Refresh Token 저장 완료');
+        }
+
+        // 3. 디코딩된 회원 정보 저장 (JSON 문자열로 변환하여 저장)
+        localStorage.setItem('userInfo', JSON.stringify(userInfo));
+        console.log('회원 정보 저장 완료:', userInfo);
+
+      } catch (error) {
+        console.error("토큰 디코딩 또는 저장 중 오류 발생:", error);
+        // 오류 발생 시에도 메인 페이지로 리다이렉트하거나, 오류 페이지로 리다이렉트할 수 있습니다.
       }
-    };
+    } else {
+      console.warn("URL에 accessToken이 없습니다.");
+      // accessToken이 없는 경우 처리 로직 (예: 로그인 페이지로 리다이렉트)
+    }
 
-    handleOAuthLogin();
-  }, [accessToken, refreshToken, router]);
+    // 모든 정보 저장 후 메인 페이지로 이동
+    // `replace`를 사용하여 뒤로 가기 버튼으로 현재 페이지로 돌아오지 않도록 합니다.
+    router.replace('/');
+  }, [searchParams, router]); // searchParams나 router가 변경될 때마다 훅이 다시 실행되도록 의존성 배열에 추가
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">로그인 처리 중...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
-          <button 
-            onClick={() => router.push('/login')}
-            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
-          >
-            로그인 페이지로 돌아가기
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="text-center">
-        <p className="text-gray-600">로그인 성공! 홈으로 이동 중...</p>
-      </div>
-    </div>
-  );
-}
-
-export default function OAuthRedirectPage() {
-  return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">토큰 정보를 로딩 중...</p>
-        </div>
-      </div>
-    }>
-      <UserInfoDecoder />
-    </Suspense>
-  );
+  // 이 컴포넌트는 UI를 렌더링할 필요가 없으므로 null을 반환합니다.
+  return null;
 }
