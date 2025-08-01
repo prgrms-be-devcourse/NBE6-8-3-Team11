@@ -31,13 +31,13 @@ public class NotificationService {
     private final SimpMessagingTemplate messagingTemplate;
 
     @Transactional(readOnly = true)
-    public List<NotificationSimpleResponseDto> getNotificationsList(String memberEmail) {
+    public List<NotificationResponseDto> getNotificationsList(String memberEmail) {
         Member member = memberRepository.findByEmail(memberEmail)
                 .orElseThrow(()->new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         List<Notification> notifications = notificationRepository.findByMemberOrderByCreatedAtDesc(member);
         return notifications.stream()
-                .map(NotificationSimpleResponseDto::from)
+                .map(NotificationResponseDto::from)
                 .collect(Collectors.toList());
     }
 
@@ -62,20 +62,6 @@ public class NotificationService {
         }
 
         notificationRepository.deleteAll(notifications);
-    }
-
-    public NotificationResponseDto getNotificationDetail(String username, Long notificationId) {
-        Member member = memberRepository.findByEmail(username)
-                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
-
-        Notification notification = notificationRepository.findByIdAndMember(notificationId, member)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOTI_NOT_FOUND));
-
-        // 알림을 읽음 처리
-        notification.markAsRead();
-        notificationRepository.save(notification);
-
-        return NotificationResponseDto.from(notification);
     }
 
     /**
