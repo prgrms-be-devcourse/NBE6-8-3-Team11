@@ -1,20 +1,48 @@
-'use client'; // 클라이언트 컴포넌트임을 명시합니다.
+'use client';
 
 import { useSearchParams } from 'next/navigation';
 
-export default function MyClientComponent() {
+export default function UserInfoDecoder() {
   const searchParams = useSearchParams();
-
-  // URL에서 'accessToken' 값을 가져옵니다.
   const accessToken = searchParams.get('accessToken');
 
-  // URL에서 'refreshToken' 값을 가져옵니다.
-  const refreshToken = searchParams.get('refreshToken');
+  let userInfo = null;
+
+  if (accessToken) {
+    try {
+      // JWT를 . (점) 기준으로 분리하여 페이로드 부분만 가져옵니다.
+      const base64Url = accessToken.split('.')[1];
+
+      // Base64 URL-safe 문자열을 일반 Base64 문자열로 변환합니다.
+      // 패딩 문자 '='가 없을 수 있으므로 추가하거나, URL-safe 디코딩 함수를 사용합니다.
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+
+      // atob() 함수를 사용하여 Base64를 디코딩합니다.
+      // (Node.js 환경에서는 Buffer.from(base64, 'base64').toString() 사용)
+      const decodedString = atob(base64);
+
+      // JSON 문자열을 JavaScript 객체로 파싱합니다.
+      userInfo = JSON.parse(decodedString);
+
+    } catch (error) {
+      console.error("Access Token 디코딩 중 오류 발생:", error);
+      userInfo = { error: "Invalid Access Token" };
+    }
+  }
 
   return (
     <div>
-      <p>Access Token: {accessToken}</p>
-      <p>Refresh Token: {refreshToken}</p>
+      <h2>사용자 정보</h2>
+      {userInfo ? (
+        <div>
+          <p>서브젝트 (sub): {userInfo.sub}</p>
+          <p>권한 (auth): {userInfo.auth}</p>
+          <p>만료 시간 (exp): {new Date(userInfo.exp * 1000).toLocaleString()}</p>
+          {/* 다른 정보들도 여기에 표시할 수 있습니다. */}
+        </div>
+      ) : (
+        <p>액세스 토큰이 없습니다.</p>
+      )}
     </div>
   );
 }

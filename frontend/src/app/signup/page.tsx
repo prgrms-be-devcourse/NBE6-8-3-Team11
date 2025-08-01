@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '../../shared/components/layout/Header';
 import Footer from '../../shared/components/layout/Footer';
-import { authService } from '../../shared/services/auth';
+import { memberService } from '../../shared/services/member';
 
 interface SignupFormData {
   email: string;
@@ -94,7 +94,7 @@ export default function SignupPage() {
     try {
       console.log('회원가입 시도:', formData);
       
-      const response = await authService.join({
+      const response = await memberService.signup({
         email: formData.email,
         password: formData.password,
         name: formData.name,
