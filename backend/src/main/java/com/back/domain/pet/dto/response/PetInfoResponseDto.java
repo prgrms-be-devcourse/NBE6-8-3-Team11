@@ -1,6 +1,7 @@
 package com.back.domain.pet.dto.response;
 
 import com.back.domain.pet.entity.Pet;
+import java.time.LocalDateTime;
 import lombok.Builder;
 
 import java.util.List;
@@ -17,6 +18,7 @@ public record PetInfoResponseDto(
         String description,
         String imageUrl,
         String shelterName,
+        LocalDateTime createdAt,
         List<String> petStatuses
 ) {
     public static PetInfoResponseDto from(Pet pet) {
