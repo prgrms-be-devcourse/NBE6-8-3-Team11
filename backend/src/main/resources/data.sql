@@ -8,6 +8,9 @@ VALUES ('user1@example.com', '$2a$10$LgL4qLhG2M.B3Z4mP3qX.e.O3B.Q.C.C.N.U.R.A.Q.
 INSERT INTO member (member_email, member_password, member_name, member_phone, member_role, created_at)
 VALUES ('shelter@example.com', '$2a$10$LgL4qLhG2M.B3Z4mP3qX.e.O3B.Q.C.C.N.U.R.A.Q.I.E.F.E.I.D.M.A.C.M.O.K.0', '행복보호소관리자', '010-3333-4444', 'USER', NOW());
 
+INSERT INTO member (member_email, member_password, member_name, member_phone, member_role, created_at)
+VALUES ('ex@mail.com', 'asd123', '홍길동', '010-9999-9999', 'USER', NOW());
+
 INSERT INTO shelter (shelter_id, shelter_name, shelter_address, shelter_city, shelter_state, shelter_zip_code, shelter_phone, created_at) VALUES
 (1, '사랑의 동물보호소', '서울시 강남구 테헤란로 123', '서울', '강남구', '06123', '02-1234-5678', '2024-01-01T00:00:00'),
 (2, '희망의 동물보호소', '서울시 서초구 서초대로 456', '서울', '서초구', '06678', '02-2345-6789', '2024-01-02T00:00:00'),
