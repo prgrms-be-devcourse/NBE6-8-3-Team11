@@ -10,7 +10,7 @@ export interface Pet {
   shelterName?: string; // Backend DTO에서 제공하는 보호소 이름
   memberIdCreatedBy: number;
   createdAt: Date;
-  petStatus?: PetStatusType; // 동물 상태
+  petStatuses?: PetStatusType[]; // 동물 상태 배열
 }
 
 // 보호소 정보 타입 (shelter 테이블 기반)

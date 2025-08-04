@@ -80,9 +80,9 @@ export default function AnimalDetailPage() {
             {/* 우측: 상태 */}
             <div className="text-right">
               <div className="flex items-center justify-end">
-                {pet.petStatus ? (
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPetStatusColorClass(pet.petStatus)}`}>
-                    {getPetStatusDisplayText(pet.petStatus)}
+                {pet.petStatuses && pet.petStatuses.length > 0 ? (
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPetStatusColorClass(pet.petStatuses)}`}>
+                    {getPetStatusDisplayText(pet.petStatuses)}
                   </span>
                 ) : (
                   <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">

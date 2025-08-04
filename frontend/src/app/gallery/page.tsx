@@ -73,8 +73,11 @@ export default function GalleryPage() {
         );
       }
     }
+    // 상태 필터 추가
     if (filters.status) {
-      filtered = filtered.filter(pet => pet.petStatus === filters.status);
+      filtered = filtered.filter(pet => 
+        pet.petStatuses && pet.petStatuses.includes(filters.status as any)
+      );
     }
 
     setFilteredPets(filtered);

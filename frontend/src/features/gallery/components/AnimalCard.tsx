@@ -26,10 +26,10 @@ export default function AnimalCard({ pet }: AnimalCardProps) {
         )}
         
         {/* 상태 배지 */}
-        {pet.petStatus && (
+        {pet.petStatuses && pet.petStatuses.length > 0 && (
           <div className="absolute top-2 right-2">
-            <span className={`text-xs px-2 py-1 rounded-full font-medium ${getPetStatusColorClass(pet.petStatus)}`}>
-              {getPetStatusDisplayText(pet.petStatus)}
+            <span className={`text-xs px-2 py-1 rounded-full font-medium ${getPetStatusColorClass(pet.petStatuses)}`}>
+              {getPetStatusDisplayText(pet.petStatuses)}
             </span>
           </div>
         )}
