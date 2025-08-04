@@ -20,6 +20,7 @@ export default function GalleryPage() {
     species: '',
     gender: '',
     age: '',
+    status: '',
   });
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -72,6 +73,9 @@ export default function GalleryPage() {
         );
       }
     }
+    if (filters.status) {
+      filtered = filtered.filter(pet => pet.petStatus === filters.status);
+    }
 
     setFilteredPets(filtered);
   }, [pets, filters, searchQuery]);
@@ -89,6 +93,7 @@ export default function GalleryPage() {
       species: '',
       gender: '',
       age: '',
+      status: '',
     });
     setSearchQuery('');
   };
@@ -198,4 +203,4 @@ export default function GalleryPage() {
       </div>
     </ErrorBoundary>
   );
-} 
+}
