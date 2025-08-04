@@ -12,14 +12,168 @@ import Image from 'next/image';
 
 interface AdoptionFormData {
   petId: number;
+  contactName: string;
   contactPhone: string;
   contactEmail: string;
   address: string;
   experience: string;
-  familyMembers: string;
   otherPets: string;
   reason: string;
 }
+
+// 로딩 컴포넌트
+const LoadingSpinner = () => (
+  <div className="min-h-screen bg-gray-50">
+    <Header />
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500"></div>
+    </div>
+    <Footer />
+  </div>
+);
+
+// 에러 컴포넌트
+const ErrorPage = ({ onBackToGallery }: { onBackToGallery: () => void }) => (
+  <div className="min-h-screen bg-gray-50">
+    <Header />
+    <div className="flex flex-col items-center justify-center min-h-[60vh]">
+      <div className="text-6xl mb-4">🐾</div>
+      <h2 className="text-2xl font-bold mb-2">동물 정보가 없습니다</h2>
+      <p className="text-gray-500 mb-6">올바른 경로로 접근해주세요.</p>
+      <button 
+        onClick={onBackToGallery} 
+        className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+      >
+        갤러리로 돌아가기
+      </button>
+    </div>
+    <Footer />
+  </div>
+);
+
+// 선택된 동물 정보 컴포넌트
+const SelectedPetInfo = ({ pet }: { pet: Pet }) => (
+  <div className="mb-8 pb-6 border-b border-gray-200">
+    <h2 className="text-xl font-semibold text-gray-900 mb-4">입양/돌봄 신청 동물</h2>
+    <div className="flex items-center space-x-4">
+      {pet.imageUrl && (
+        <div className="w-24 h-24 relative rounded-lg overflow-hidden">
+          <Image
+            src={pet.imageUrl.split('?')[0]}
+            alt={pet.name}
+            fill
+            className="object-cover"
+          />
+        </div>
+      )}
+      <div className="flex-1">
+        <h3 className="text-lg font-semibold text-gray-900 mb-1">{pet.name}</h3>
+        <p className="text-sm text-gray-600 mb-2">
+          {formatAnimalSpecies(pet.species)} • {formatAnimalAge(pet.age)} • {formatAnimalGender(pet.gender)}
+        </p>
+        <p className="text-sm text-gray-500">
+          보호소: {pet.shelterName || '정보 없음'}
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
+// 폼 입력 필드 컴포넌트
+const FormField = ({ 
+  label, 
+  name, 
+  type = 'text', 
+  value, 
+  onChange, 
+  placeholder, 
+  required = false,
+  rows = undefined 
+}: {
+  label: string;
+  name: string;
+  type?: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  placeholder?: string;
+  required?: boolean;
+  rows?: number;
+}) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      {label}
+    </label>
+    {type === 'textarea' ? (
+      <textarea
+        name={name}
+        value={value}
+        onChange={onChange}
+        rows={rows}
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+        placeholder={placeholder}
+        required={required}
+      />
+    ) : (
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+        placeholder={placeholder}
+        required={required}
+      />
+    )}
+  </div>
+);
+
+// 메시지 컴포넌트
+const MessageDisplay = ({ message }: { message: string }) => {
+  if (!message) return null;
+  
+  const isSuccess = message.includes('성공');
+  return (
+    <div className={`p-4 rounded-lg ${
+      isSuccess ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+    }`}>
+      {message}
+    </div>
+  );
+};
+
+// 액션 버튼 컴포넌트
+const ActionButtons = ({ 
+  petId, 
+  isSubmitting, 
+  onSubmit 
+}: { 
+  petId: number; 
+  isSubmitting: boolean; 
+  onSubmit: (e: React.FormEvent) => void; 
+}) => (
+  <div className="pt-6 border-t border-gray-200 space-y-4">
+    <button
+      type="button"
+      onClick={() => window.location.href = `/chat?petId=${petId}`}
+      className="w-full py-3 px-6 rounded-lg font-semibold text-lg border-2 border-orange-500 text-orange-500 hover:bg-orange-50 transition-colors"
+    >
+      상담하기
+    </button>
+    
+    <button
+      type="submit"
+      disabled={isSubmitting}
+      onClick={onSubmit}
+      className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-colors ${
+        isSubmitting
+          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          : 'bg-orange-500 text-white hover:bg-orange-600'
+      }`}
+    >
+      {isSubmitting ? '제출 중...' : '입양/돌봄 신청하기'}
+    </button>
+  </div>
+);
 
 function ApplyPageContent() {
   const router = useRouter();
@@ -33,11 +187,11 @@ function ApplyPageContent() {
 
   const [formData, setFormData] = useState<AdoptionFormData>({
     petId: 0,
+    contactName: '',
     contactPhone: '',
     contactEmail: '',
     address: '',
     experience: '',
-    familyMembers: '',
     otherPets: '',
     reason: '',
   });
@@ -47,7 +201,6 @@ function ApplyPageContent() {
       try {
         setIsLoading(true);
         
-        // URL에서 petId가 있으면 해당 동물 정보 로드
         if (petIdFromUrl) {
           const petData = await petService.getPet(petIdFromUrl);
           setSelectedPet(petData);
@@ -84,7 +237,6 @@ function ApplyPageContent() {
     setSubmitMessage('');
 
     try {
-      // 입양/돌봄 신청 API 호출
       await adoptionService.createAdoption({
         petId: selectedPet.id.toString(),
         message: formData.reason,
@@ -92,7 +244,6 @@ function ApplyPageContent() {
 
       setSubmitMessage('입양/돌봄 신청이 성공적으로 제출되었습니다!');
       
-      // 3초 후 프로필 페이지로 이동
       setTimeout(() => {
         router.push('/profile');
       }, 3000);
@@ -105,31 +256,16 @@ function ApplyPageContent() {
     }
   };
 
+  const handleBackToGallery = () => {
+    router.push('/gallery');
+  };
+
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500"></div>
-        </div>
-        <Footer />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!selectedPet) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <div className="text-6xl mb-4">🐾</div>
-          <h2 className="text-2xl font-bold mb-2">동물 정보가 없습니다</h2>
-          <p className="text-gray-500 mb-6">올바른 경로로 접근해주세요.</p>
-          <button onClick={() => router.push('/gallery')} className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors">갤러리로 돌아가기</button>
-        </div>
-        <Footer />
-      </div>
-    );
+    return <ErrorPage onBackToGallery={handleBackToGallery} />;
   }
 
   return (
@@ -141,173 +277,86 @@ function ApplyPageContent() {
           <p className="text-gray-600">입양/돌봄 신청서를 작성해주세요.</p>
         </div>
 
-        {/* 통합된 입양/돌봄 신청서 */}
         <div className="bg-white rounded-lg shadow-lg p-8">
-          {/* 선택된 동물 정보 */}
-          <div className="mb-8 pb-6 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">입양/돌봄 신청 동물</h2>
-            <div className="flex items-center space-x-4">
-              {selectedPet.imageUrl && (
-                <div className="w-24 h-24 relative rounded-lg overflow-hidden">
-                  <Image
-                    src={selectedPet.imageUrl.split('?')[0]}
-                    alt={selectedPet.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              )}
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">{selectedPet.name}</h3>
-                <p className="text-sm text-gray-600 mb-2">
-                  {formatAnimalSpecies(selectedPet.species)} • {formatAnimalAge(selectedPet.age)} • {formatAnimalGender(selectedPet.gender)}
-                </p>
-                {selectedPet.shelterName ? (
-                  <p className="text-sm text-gray-500">보호소: {selectedPet.shelterName}</p>
-                ) : (
-                  <p className="text-sm text-gray-500">보호소 정보 없음</p>
-                )}
-              </div>
-            </div>
-          </div>
+          <SelectedPetInfo pet={selectedPet} />
 
-          {/* 입양/돌봄 신청서 폼 */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  신청자 성함
-                </label>
-                <input
-                  type="text"
-                  name="familyMembers"
-                  value={formData.familyMembers}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  이메일
-                </label>
-                <input
-                  type="email"
-                  name="contactEmail"
-                  value={formData.contactEmail}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="example@email.com"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                연락처 (전화번호)
-              </label>
-              <input
-                type="tel"
-                name="contactPhone"
-                value={formData.contactPhone}
+              <FormField
+                label="신청자 성함"
+                name="contactName"
+                value={formData.contactName}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                placeholder="010-1234-5678"
+                placeholder="이름을 입력해주세요"
+                required
+              />
+
+              <FormField
+                label="이메일"
+                name="contactEmail"
+                type="email"
+                value={formData.contactEmail}
+                onChange={handleInputChange}
+                placeholder="이메일을 입력해주세요"
                 required
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                주소
-              </label>
-              <input
-                type="text"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                placeholder="서울시 강남구..."
-                required
-              />
-            </div>
+            <FormField
+              label="연락처 (전화번호)"
+              name="contactPhone"
+              type="tel"
+              value={formData.contactPhone}
+              onChange={handleInputChange}
+              placeholder="연락 가능한 전화번호를 입력해주세요"
+              required
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                현재 키우고 있는 다른 반려동물
-              </label>
-              <input
-                type="text"
-                name="otherPets"
-                value={formData.otherPets}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                placeholder="없음 또는 현재 키우고 있는 동물"
-              />
-            </div>
+            <FormField
+              label="주소"
+              name="address"
+              value={formData.address}
+              onChange={handleInputChange}
+              placeholder="주소를 입력해주세요"
+              required
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                반려동물 키우는 경험
-              </label>
-              <textarea
-                name="experience"
-                value={formData.experience}
-                onChange={handleInputChange}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                placeholder="이전에 반려동물을 키운 경험이 있다면 간단히 설명해주세요."
-              />
-            </div>
+            <FormField
+              label="현재 키우고 있는 다른 반려동물"
+              name="otherPets"
+              value={formData.otherPets}
+              onChange={handleInputChange}
+              placeholder="현재 키우고 있는 동물의 종류, 수를 입력해주세요"
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                입양/돌봄하고 싶은 이유
-              </label>
-              <textarea
-                name="reason"
-                value={formData.reason}
-                onChange={handleInputChange}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                placeholder="이 동물을 입양/돌봄하고 싶은 이유를 설명해주세요."
-                required
-              />
-            </div>
+            <FormField
+              label="반려동물 키우는 경험"
+              name="experience"
+              type="textarea"
+              value={formData.experience}
+              onChange={handleInputChange}
+              placeholder="이전에 반려동물을 키운 경험이 있다면 간단히 설명해주세요."
+              rows={3}
+            />
 
-            {submitMessage && (
-              <div className={`p-4 rounded-lg ${
-                submitMessage.includes('성공') 
-                  ? 'bg-green-50 text-green-800' 
-                  : 'bg-red-50 text-red-800'
-              }`}>
-                {submitMessage}
-              </div>
-            )}
+            <FormField
+              label="입양/돌봄하고 싶은 이유"
+              name="reason"
+              type="textarea"
+              value={formData.reason}
+              onChange={handleInputChange}
+              placeholder="이 동물을 입양/돌봄하고 싶은 이유를 설명해주세요."
+              required
+              rows={3}
+            />
 
-            <div className="pt-6 border-t border-gray-200 space-y-4">
-              <button
-                type="button"
-                onClick={() => router.push(`/chat?petId=${selectedPet.id}`)}
-                className="w-full py-3 px-6 rounded-lg font-semibold text-lg border-2 border-orange-500 text-orange-500 hover:bg-orange-50 transition-colors"
-              >
-                상담하기
-              </button>
-              
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-colors ${
-                  isSubmitting
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-orange-500 text-white hover:bg-orange-600'
-                }`}
-              >
-                {isSubmitting ? '제출 중...' : '입양/돌봄 신청하기'}
-              </button>
-            </div>
+            <MessageDisplay message={submitMessage} />
+
+            <ActionButtons 
+              petId={selectedPet.id} 
+              isSubmitting={isSubmitting} 
+              onSubmit={handleSubmit}
+            />
           </form>
         </div>
       </main>
@@ -318,15 +367,7 @@ function ApplyPageContent() {
 
 export default function ApplyPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500"></div>
-        </div>
-        <Footer />
-      </div>
-    }>
+    <Suspense fallback={<LoadingSpinner />}>
       <ApplyPageContent />
     </Suspense>
   );
