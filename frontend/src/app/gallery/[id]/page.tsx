@@ -62,12 +62,12 @@ export default function AnimalDetailPage() {
       }, 1000);
 
       // 알림 핸들러 등록
-      const handleNotification = (notification: any) => {
+      const handleNotification = (notification: { title?: string; message?: string; content?: string; type?: string }) => {
         console.log('Gallery page - Received notification:', notification);
         addNotification({
           title: notification.title || '새 알림',
           message: notification.message || notification.content || '새로운 알림이 도착했습니다.',
-          type: notification.type || 'NEW_MESSAGE',
+          type: (notification.type as 'NEW_MESSAGE' | 'ADOPTION_REQUESTED' | 'ADOPTION_ACCEPTED' | 'ADOPTION_REJECTED' | 'CARE_REQUESTED' | 'CARE_ACCEPTED' | 'CARE_REJECTED' | 'CHAT_ROOM_DELETED') || 'NEW_MESSAGE',
           userId: userId,
         });
       };
