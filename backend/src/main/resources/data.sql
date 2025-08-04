@@ -23,9 +23,9 @@ INSERT INTO pet (pet_name, pet_species, pet_age, pet_gender, pet_description, pe
 
 -- 모든 동물을 '입양 가능' 상태로 초기화
 INSERT INTO pet_status (pet_status_type, pet_id) VALUES
-('AVAILABLE_FOR_ADOPTION', 1),
+('ADOPTED', 1),
 ('AVAILABLE_FOR_ADOPTION', 2),
-('AVAILABLE_FOR_ADOPTION', 3),
-('AVAILABLE_FOR_ADOPTION', 4),
-('AVAILABLE_FOR_ADOPTION', 5),
-('AVAILABLE_FOR_ADOPTION', 6);
+('AVAILABLE_FOR_CARE', 3),
+('AVAILABLE_BOTH', 4),
+('CARE_IN_PROGRESS', 5),
+('CARE_COMPLETED', 6);
