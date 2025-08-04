@@ -10,6 +10,7 @@ export interface Pet {
   shelterName?: string; // Backend DTO에서 제공하는 보호소 이름
   memberIdCreatedBy: number;
   createdAt: Date;
+  petStatus?: PetStatusType; // 동물 상태
 }
 
 // 보호소 정보 타입 (shelter 테이블 기반)
@@ -62,9 +63,17 @@ export interface Care {
 export interface PetStatus {
   id: number;
   petId: number;
-  status: 'available' | 'adopted' | 'in_care';
+  status: PetStatusType;
   createdAt: Date;
 }
+
+// 동물 상태 enum (백엔드 PetStatusType과 일치)
+export type PetStatusType = 
+  | 'AVAILABLE_FOR_ADOPTION' 
+  | 'ADOPTED' 
+  | 'AVAILABLE_FOR_CARE' 
+  | 'CARE_IN_PROGRESS' 
+  | 'CARE_COMPLETED';
 
 // 채팅방 타입 (chat_room 테이블 기반)
 export interface ChatRoom {

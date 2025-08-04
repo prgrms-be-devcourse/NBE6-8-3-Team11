@@ -6,7 +6,7 @@ import Header from '../../../shared/components/layout/Header';
 import Footer from '../../../shared/components/layout/Footer';
 import { petService } from '../../../shared/services/petService';
 import { Pet } from '../../../shared/types';
-import { formatAnimalAge, formatAnimalGender, formatAnimalSpecies } from '../../../shared/utils';
+import { formatAnimalAge, formatAnimalGender, formatAnimalSpecies, getPetStatusDisplayText, getPetStatusColorClass } from '../../../shared/utils';
 import Image from 'next/image';
 
 export default function AnimalDetailPage() {
@@ -80,9 +80,15 @@ export default function AnimalDetailPage() {
             {/* 우측: 상태 */}
             <div className="text-right">
               <div className="flex items-center justify-end">
-                <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
-                  입양 가능
-                </span>
+                {pet.petStatus ? (
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPetStatusColorClass(pet.petStatus)}`}>
+                    {getPetStatusDisplayText(pet.petStatus)}
+                  </span>
+                ) : (
+                  <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">
+                    상태 미정
+                  </span>
+                )}
               </div>
             </div>
           </div>

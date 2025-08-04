@@ -1,7 +1,10 @@
+import { PetStatusType } from '../../../shared/types';
+
 interface FilterState {
   species: string;
   gender: string;
   age: string;
+  status: string; // petStatus 필터 추가
 }
 
 interface AnimalFilterProps {
