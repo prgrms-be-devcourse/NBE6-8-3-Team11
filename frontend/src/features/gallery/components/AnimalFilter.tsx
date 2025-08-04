@@ -88,6 +88,7 @@ export default function AnimalFilter({ filters, onChange }: AnimalFilterProps) {
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
         >
           <option value="">전체</option>
+          <option value="AVAILABLE_BOTH">입양 및 돌봄 가능</option>
           <option value="AVAILABLE_FOR_ADOPTION">입양 가능</option>
           <option value="AVAILABLE_FOR_CARE">돌봄 가능</option>
           <option value="ADOPTED">입양 완료</option>

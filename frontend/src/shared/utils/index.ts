@@ -139,6 +139,11 @@ export const getPetStatusDisplayText = (statuses: PetStatusType[] | undefined): 
     return '상태 미정';
   }
 
+  // 입양 및 돌봄 가능이 있으면 "입양 및 돌봄 가능"
+  if (statuses.includes('AVAILABLE_BOTH')) {
+    return '입양 및 돌봄 가능';
+  }
+  
   // 입양 가능이 있으면 "입양 가능"
   if (statuses.includes('AVAILABLE_FOR_ADOPTION')) {
     return '입양 가능';
@@ -163,6 +168,11 @@ export const getPetStatusColorClass = (statuses: PetStatusType[] | undefined): s
     return 'bg-gray-100 text-gray-800';
   }
 
+  // 입양 및 돌봄 가능이 있으면 주황색
+  if (statuses.includes('AVAILABLE_BOTH')) {
+    return 'bg-orange-100 text-orange-800';
+  }
+  
   // 입양 가능이 있으면 초록색
   if (statuses.includes('AVAILABLE_FOR_ADOPTION')) {
     return 'bg-green-100 text-green-800';
@@ -184,19 +194,20 @@ export const getPetStatusColorClass = (statuses: PetStatusType[] | undefined): s
 // 입양과 돌봄이 모두 가능한지 확인
 export const isAvailableForBoth = (statuses: PetStatusType[] | undefined): boolean => {
   if (!statuses || statuses.length === 0) return false;
-  return statuses.includes('AVAILABLE_FOR_ADOPTION') || statuses.includes('AVAILABLE_FOR_CARE');
+  return statuses.includes('AVAILABLE_BOTH') || 
+         (statuses.includes('AVAILABLE_FOR_ADOPTION') && statuses.includes('AVAILABLE_FOR_CARE'));
 };
 
 // 입양 가능한지 확인
 export const isAvailableForAdoption = (statuses: PetStatusType[] | undefined): boolean => {
   if (!statuses || statuses.length === 0) return false;
-  return statuses.includes('AVAILABLE_FOR_ADOPTION');
+  return statuses.includes('AVAILABLE_FOR_ADOPTION') || statuses.includes('AVAILABLE_BOTH');
 };
 
 // 돌봄 가능한지 확인
 export const isAvailableForCare = (statuses: PetStatusType[] | undefined): boolean => {
   if (!statuses || statuses.length === 0) return false;
-  return statuses.includes('AVAILABLE_FOR_CARE');
+  return statuses.includes('AVAILABLE_FOR_CARE') || statuses.includes('AVAILABLE_BOTH');
 };
 
 // 입양/돌봄 불가능한지 확인

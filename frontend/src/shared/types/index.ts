@@ -70,8 +70,9 @@ export interface PetStatus {
 // 동물 상태 enum (백엔드 PetStatusType과 일치)
 export type PetStatusType = 
   | 'AVAILABLE_FOR_ADOPTION' 
-  | 'ADOPTED' 
   | 'AVAILABLE_FOR_CARE' 
+  | 'AVAILABLE_BOTH'
+  | 'ADOPTED' 
   | 'CARE_IN_PROGRESS' 
   | 'CARE_COMPLETED';
 
