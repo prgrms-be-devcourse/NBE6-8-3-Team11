@@ -178,23 +178,22 @@ public class AdoptionService {
         Member member = getMemberByEmail(memberEmail);
         Object entity = getReceivedApplicationEntity(requestDto.type(), requestDto.id(), member);
 
+        Pet pet = petRepository.findById(requestDto.id())
+                .orElseThrow(() -> new PetException(PetErrorCode.PET_NOT_FOUND));
+
         RequestStatus newStatus = RequestStatus.valueOf(requestDto.status());
 
         if (newStatus == RequestStatus.REJECTED) {
             updateApplicationStatus(entity, newStatus);
-            notificationService.sendResponseNotification(
-                    member.getId(),
-                    "신청이 거절되었습니다.",
-                    requestDto.type(),
-                    false
-            );
+            notificationService.sendResponseNotification(member.getId(), "신청을 거절되었습니다.", requestDto.type(), false);
+            notificationService.sendResponseNotification(pet.getMember().getId(), "신청이 거절되었습니다.", requestDto.type(), false);
             return;
         }
 
         // ACCEPTED인 경우 PetStatus도 함께 업데이트
         updateApplicationStatusWithPetStatus(entity, newStatus);
-        notificationService.sendResponseNotification(member.getId(),
-                requestDto.type(), "신청이 승인되었습니다.", true);
+        notificationService.sendResponseNotification(member.getId(), "신청을 승인하셨습니다.", requestDto.type(), true);
+        notificationService.sendResponseNotification(pet.getMember().getId(), "신청이 승인되셨습니다.", requestDto.type(), true);
     }
 
     public void deleteReceivedSingleHistory(Long typeId, String type, String memberEmail) {
