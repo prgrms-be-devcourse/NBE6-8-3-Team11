@@ -2,6 +2,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface UserInfo {
+  id?: number;
   sub: string;
   auth: string;
   exp: number;

@@ -30,19 +30,32 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-  
+
     try {
       const response = await memberService.login({
         email: formData.email,
         password: formData.password,
       });
-      
-      console.log('로그인 성공:', response);
-      
+
+      // userInfo 객체
+      const userInfo = {
+        id: response.userId,         // 이게 없으면 아래에서 처리
+        sub: response.userId.toString(),
+        auth: 'USER',
+        exp: Date.now() + 3600000,
+        nickname: response.userName,
+        email: response.userEmail,
+      };
+
+      const userId = userInfo.id ?? parseInt(userInfo.sub, 10);
+      if (isNaN(userId)) {
+        throw new Error('Invalid userId in userInfo');
+      }
       // useAuth의 login 함수를 호출하여 상태와 localStorage를 한번에 업데이트
       login(
-        { 
-          id: parseInt(response.userId.toString(), 10), 
+        {
+
+          id:userId,
           email: response.userEmail, 
           name: response.userName 
         },
