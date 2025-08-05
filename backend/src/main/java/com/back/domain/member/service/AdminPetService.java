@@ -93,27 +93,27 @@ public class AdminPetService {
         Pet pet = petRepository.findById(petId)
                 .orElseThrow(() -> new PetException(PetErrorCode.PET_NOT_FOUND));
 
-        /* 필요시 주석 해제
+        // 필요없을 시 주석 처리 가능
         Shelter shelter = null;
         if (requestDto.getShelterName() != null && !requestDto.getShelterName().isBlank()) {
             shelter = shelterRepository.findByName(requestDto.getShelterName())
                     .orElseThrow(() -> new CustomException(ErrorCode.SHELTER_NOT_FOUND));
         }
-        */
 
         pet.updatePet(requestDto);
 
-        // 수정 시에도 PetStatus 업데이트 로직 추가
-        List<PetStatus> statuses = new ArrayList<>();
-        if (requestDto.getStatuses() != null) {
-            statuses = requestDto.getStatuses().stream()
+        // [수정된 부분] 기존 컬렉션을 clear하고 새로운 요소를 addAll 하는 방식으로 변경
+        pet.getPetStatuses().clear(); // 1. 기존 리스트의 내용을 모두 지움
+
+        if (requestDto.getStatuses() != null && !requestDto.getStatuses().isEmpty()) {
+            List<PetStatus> newStatuses = requestDto.getStatuses().stream()
                     .map(status -> PetStatus.builder()
                             .status(PetStatusType.valueOf(status))
                             .pet(pet)
                             .build())
                     .collect(Collectors.toList());
+            pet.getPetStatuses().addAll(newStatuses); // 2. 기존 리스트에 새로운 요소들을 추가
         }
-        pet.setPetStatuses(statuses);
 
         return PetInfoResponseDto.from(pet);
     }
