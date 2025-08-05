@@ -6,6 +6,7 @@ import Footer from '../../shared/components/layout/Footer';
 import ProfileInfo from '../../features/profile/components/ProfileInfo';
 import ProfileEdit from '../../features/profile/components/ProfileEdit';
 import AdoptionHistory from '../../features/profile/components/AdoptionHistory';
+import ReceivedAdoptionHistory from '../../features/profile/components/ReceivedAdoptionHistory';
 import LoadingSpinner from '../../shared/components/common/LoadingSpinner';
 import ErrorBoundary from '../../shared/components/common/ErrorBoundary';
 import { User } from '../../features/profile/types';
@@ -50,7 +51,8 @@ export default function ProfilePage() {
   const tabs = [
     { id: 'info', label: '내 정보', icon: '👤' },
     { id: 'edit', label: '정보 수정', icon: '✏️' },
-    { id: 'history', label: '입양 이력', icon: '📋' }
+    { id: 'history', label: '입양 신청 이력', icon: '📋' },
+    { id: 'getHistory', label: '받은 신청 이력', icon: '📖' }
   ];
 
   if (isLoading) {
@@ -103,6 +105,7 @@ export default function ProfilePage() {
               {activeTab === 'info' && <ProfileInfo user={user} />}
               {activeTab === 'edit' && <ProfileEdit user={user} setUser={setUser} />}
               {activeTab === 'history' && <AdoptionHistory />}
+              {activeTab === 'getHistory' && <ReceivedAdoptionHistory />}
             </div>
           </div>
         </main>
