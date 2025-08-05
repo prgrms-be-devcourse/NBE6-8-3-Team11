@@ -217,7 +217,7 @@ export default function AdminPage() {
     try {
       if (editingPet && editingPet.id) {
         // 수정 시: DTO에 불필요한 id와 petOwnerId를 제거
-        const { id, petOwnerId, createdAt, ...updateData } = petData;
+        const { id, ...updateData } = petData;
         
         await adminService.updatePet(editingPet.id.toString(), updateData as UpdatePetRequest);
         alert('펫 정보가 성공적으로 수정되었습니다.');
