@@ -607,45 +607,46 @@ function ApplyPageContent() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  현재 키우고 있는 다른 반려동물
-                </label>
-                <input
-                  type="text"
-                  name="anotherPets"
-                  value={formData.anotherPets}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="없음 또는 현재 키우고 있는 동물"
-                />
-              </div>
-            </div>
+             <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  현재 키우고 있는 다른 반려동물
+                </label>
+                <input
+                  type="text"
+                  name="anotherPets"
+                  value={formData.anotherPets}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  placeholder="없음 또는 현재 키우고 있는 동물"
+                />
+              </div>
+            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                반려동물 키우는 경험
-              </label>
-              <textarea
-                name="experience"
-                value={formData.experience}
-                onChange={handleInputChange}
-                placeholder="이름을 입력해주세요"
-                required
-              />
+            <div> 
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                반려동물 키우는 경험
+              </label>
+              <textarea
+                name="experience"
+                value={formData.experience}
+                onChange={handleInputChange}
+                placeholder="이름을 입력해주세요"
+                required
+              />
+            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                입양하고 싶은 이유
-              </label>
-              <textarea
-                name="message"
-                value={formData.message}
-                onChange={handleInputChange}
-                placeholder="이메일을 입력해주세요"
-                required
-              />
-            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                입양하고 싶은 이유
+              </label>
+              <textarea
+                name="message"
+                value={formData.message}
+                onChange={handleInputChange}
+                placeholder="이메일을 입력해주세요"
+                required
+              />
+            </div>
 
             <FormField
               label="연락처 (전화번호)"
