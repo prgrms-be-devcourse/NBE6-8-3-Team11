@@ -1,5 +1,7 @@
 package com.back.domain.member.service;
 
+import com.back.domain.member.entity.Member;
+import com.back.domain.member.repository.MemberRepository;
 import com.back.domain.pet.dto.request.PetCreateRequestDto;
 import com.back.domain.pet.dto.request.PetUpdateRequestDto;
 import com.back.domain.pet.dto.response.PetInfoResponseDto;
@@ -25,9 +27,14 @@ public class AdminPetService {
 
     private final PetRepository petRepository;
     private final ShelterRepository shelterRepository;
+    private final MemberRepository memberRepository;
 
     // 새로운 동물 등록
-    public PetInfoResponseDto createPet(PetCreateRequestDto requestDto) {
+    public PetInfoResponseDto createPet(PetCreateRequestDto requestDto, String adminEmail) {
+        // 관리자 이메일로 Member 조회
+        Member admin = memberRepository.findByEmail(adminEmail)
+                .orElseThrow(() -> new PetException(PetErrorCode.MEMBER_NOT_FOUND));
+
         // 보호소 null 값 허용
         Shelter shelter = null;
         if (requestDto.getShelterName() != null && !requestDto.getShelterName().isBlank()) {
@@ -43,6 +50,7 @@ public class AdminPetService {
                 .description(requestDto.getDescription())
                 .imageUrl(requestDto.getImageUrl())
                 .shelter(shelter)
+                .member(admin) // 관리자 멤버로 추가
                 .build();
 
         Pet savedPet = petRepository.save(pet);
