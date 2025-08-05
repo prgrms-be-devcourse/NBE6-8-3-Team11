@@ -6,16 +6,28 @@ import { useAuth } from '../../context/AuthContext';
 import Header from '../../shared/components/layout/Header';
 import Footer from '../../shared/components/layout/Footer';
 import LoadingSpinner from '../../shared/components/common/LoadingSpinner';
-import { adminService, AdminUser, AdminPet } from '../../shared/services/admin';
+import { adminService, AdminPet } from '../../shared/services/admin';
 import { formatDate } from '../../shared/utils';
+
+// NOTE: API 응답과 일치하는 새로운 타입을 정의하여 문제를 해결합니다.
+// 기존 AdminUser 타입은 API 응답(memberId)과 일치하지 않았습니다.
+interface MemberData {
+  memberId: number;
+  id: number; // 타입 호환성을 위해 유지할 수 있으나, memberId를 사용합니다.
+  name: string;
+  email: string;
+  // API 응답에 role이 없으므로 주석 처리합니다. 필요 시 백엔드 DTO에 추가해야 합니다.
+  // role: string; 
+  createdAt: string;
+}
 
 export default function AdminPage() {
   const { userInfo, isLoggedIn, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('members'); // 'members' or 'pets'
+  const [activeTab, setActiveTab] = useState('members');
 
   // States for Member Management
-  const [members, setMembers] = useState<AdminUser[]>([]);
+  const [members, setMembers] = useState<MemberData[]>([]);
   const [isMembersLoading, setIsMembersLoading] = useState(true);
   const [memberError, setMemberError] = useState('');
 
@@ -26,13 +38,13 @@ export default function AdminPage() {
 
   const isAdmin = userInfo?.auth?.includes('ADMIN');
 
-  // Fetch members data
   const fetchMembers = useCallback(async () => {
     setIsMembersLoading(true);
     setMemberError('');
     try {
+      // adminService.getMembers()는 AdminUser[]를 반환하지만, 실제 데이터는 MemberData 형태입니다.
       const memberData = await adminService.getMembers();
-      setMembers(memberData);
+      setMembers(memberData as any); // 타입 단언을 통해 데이터를 할당합니다.
     } catch (error) {
       console.error('Failed to fetch members:', error);
       setMemberError('회원 목록을 불러오는 데 실패했습니다.');
@@ -41,7 +53,6 @@ export default function AdminPage() {
     }
   }, []);
 
-  // Fetch pets data
   const fetchPets = useCallback(async () => {
     setIsPetsLoading(true);
     setPetError('');
@@ -56,7 +67,6 @@ export default function AdminPage() {
     }
   }, []);
   
-  // Initial data loading based on active tab
   useEffect(() => {
     if (isAdmin) {
       if (activeTab === 'members') {
@@ -67,7 +77,6 @@ export default function AdminPage() {
     }
   }, [isAdmin, activeTab, fetchMembers, fetchPets]);
 
-  // Auth check effect
   useEffect(() => {
     if (!isAuthLoading) {
       if (!isLoggedIn || !isAdmin) {
@@ -82,7 +91,7 @@ export default function AdminPage() {
       try {
         await adminService.deleteMember(memberId.toString());
         alert('회원이 성공적으로 삭제되었습니다.');
-        fetchMembers(); // Refresh the list
+        fetchMembers();
       } catch (error) {
         alert('회원 삭제에 실패했습니다.');
         console.error('Failed to delete member:', error);
@@ -95,14 +104,13 @@ export default function AdminPage() {
       try {
         await adminService.deletePet(petId.toString());
         alert('펫이 성공적으로 삭제되었습니다.');
-        fetchPets(); // Refresh the list
+        fetchPets();
       } catch (error) {
         alert('펫 삭제에 실패했습니다.');
         console.error('Failed to delete pet:', error);
       }
     }
   };
-
 
   if (isAuthLoading || !isLoggedIn || !isAdmin) {
     return (
@@ -125,7 +133,6 @@ export default function AdminPage() {
             <p className="text-gray-600">사용자와 반려동물 정보를 관리하세요.</p>
         </div>
 
-        {/* Tab Navigation */}
         <div className="mb-6 border-b border-gray-200">
             <nav className="flex space-x-4">
                 <button 
@@ -143,7 +150,6 @@ export default function AdminPage() {
             </nav>
         </div>
 
-        {/* Tab Content */}
         <div className="bg-white rounded-lg shadow-sm p-6">
             {activeTab === 'members' && (
                 <div>
@@ -156,21 +162,22 @@ export default function AdminPage() {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">이름</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">이메일</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">역할</th>
+                                        {/* FIX: API 응답에 역할(role)이 없어 테이블에서 제외 */}
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">가입일</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">작업</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
                                     {members.map(member => (
-                                        <tr key={member.id}>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.id}</td>
+                                        // FIX: key prop에 고유하고 올바른 값인 memberId를 사용합니다.
+                                        <tr key={member.memberId}>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.memberId}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{member.name}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.email}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.role}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(new Date(member.createdAt))}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <button onClick={() => handleDeleteMember(member.id)} className="text-red-600 hover:text-red-900">삭제</button>
+                                                {/* FIX: handleDeleteMember에 올바른 ID(memberId)를 전달합니다. */}
+                                                <button onClick={() => handleDeleteMember(member.memberId)} className="text-red-600 hover:text-red-900">삭제</button>
                                             </td>
                                         </tr>
                                     ))}
