@@ -118,6 +118,19 @@ export default function AdoptionHistory() {
     }
   };
 
+  const handleDeleteAllApplications = async () => {
+    if (!confirm('정말로 모든 신청을 삭제하시겠습니까?')) return;
+    
+    try {
+      await adoptionService.deleteAllAdoptionApplications();
+      setAdoptionRecords([]);
+      alert('모든 신청을 삭제했습니다.');
+    } catch (error) {
+      console.error('전체 삭제 실패:', error);
+      alert('전체 삭제에 실패했습니다.');
+    }
+  };
+
   const handleViewDetail = async (recordId: number, type: string) => {
     try {
       const detail = await adoptionService.getAdoptionApplicationDetail(recordId.toString(), type);
@@ -217,6 +230,18 @@ export default function AdoptionHistory() {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold text-gray-900">입양/돌봄 신청 이력</h2>
+        {adoptionRecords.length > 0 && (
+          <button 
+            onClick={handleDeleteAllApplications}
+            className="text-sm text-red-600 hover:text-red-700 font-medium bg-red-50 hover:bg-red-100 px-3 py-1 rounded-lg transition-colors"
+          >
+            전체 삭제
+          </button>
+        )}
+      </div>
+
       <div className="flex items-center space-x-4">
         <span className="text-sm font-medium text-gray-700">상태별 필터:</span>
         <div className="flex space-x-2">
@@ -306,6 +331,17 @@ export default function AdoptionHistory() {
                     className="text-sm text-red-600 hover:text-red-700 font-medium bg-red-50 hover:bg-red-100 px-3 py-1 rounded-lg transition-colors"
                   >
                     신청 취소
+                  </button>
+                </div>
+              )}
+
+              {(record.status === 'ACCEPTED' || record.status === 'REJECTED') && (
+                <div className="absolute bottom-4 right-4">
+                  <button 
+                    onClick={() => handleDeleteApplication(record.id, record.type)}
+                    className="text-sm text-gray-600 hover:text-gray-700 font-medium bg-gray-50 hover:bg-gray-100 px-3 py-1 rounded-lg transition-colors"
+                  >
+                    삭제
                   </button>
                 </div>
               )}
