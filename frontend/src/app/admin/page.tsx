@@ -6,7 +6,8 @@ import { useAuth } from '../../context/AuthContext';
 import Header from '../../shared/components/layout/Header';
 import Footer from '../../shared/components/layout/Footer';
 import LoadingSpinner from '../../shared/components/common/LoadingSpinner';
-import { adminService, AdminPet, CreatePetRequest, UpdatePetRequest } from '../../shared/services/admin';
+import { adminService, CreatePetRequest, UpdatePetRequest } from '../../shared/services/admin';
+import { Pet } from '../../shared/types';
 import { formatDate } from '../../shared/utils';
 
 // 회원 데이터 타입 정의
@@ -38,12 +39,10 @@ interface PetFormData {
   imageUrl: string;
   shelterName: string;
   statuses: string[];
-  petOwnerId?: number;
-  createdAt?: Date | string;
 }
 
 // 펫 폼 모달 컴포넌트
-const PetFormModal = ({ pet, onClose, onSave }: { pet: Partial<AdminPet> | null, onClose: () => void, onSave: (petData: PetFormData) => void }) => {
+const PetFormModal = ({ pet, onClose, onSave }: { pet: Partial<Pet> | null, onClose: () => void, onSave: (petData: PetFormData) => void }) => {
   // FIX: pet?.petStatuses가 있으면 그 값을, 없으면 기본값을 사용하도록 초기화 로직 수정
   const initialStatuses = pet?.petStatuses && pet.petStatuses.length > 0 ? pet.petStatuses : ['AVAILABLE_FOR_ADOPTION'];
 
@@ -125,12 +124,12 @@ export default function AdminPage() {
   const [isMembersLoading, setIsMembersLoading] = useState(true);
   const [memberError, setMemberError] = useState('');
 
-  const [pets, setPets] = useState<AdminPet[]>([]);
+  const [pets, setPets] = useState<Pet[]>([]);
   const [isPetsLoading, setIsPetsLoading] = useState(true);
   const [petError, setPetError] = useState('');
 
   const [isPetModalOpen, setIsPetModalOpen] = useState(false);
-  const [editingPet, setEditingPet] = useState<Partial<AdminPet> | null>(null);
+  const [editingPet, setEditingPet] = useState<Partial<Pet> | null>(null);
 
   const isAdmin = userInfo?.auth?.includes('ADMIN');
 
@@ -139,7 +138,14 @@ export default function AdminPage() {
     setMemberError('');
     try {
       const memberData = await adminService.getMembers();
-      setMembers(memberData as any);
+      // Member 타입을 MemberData로 변환
+      const convertedMembers: MemberData[] = memberData.map(member => ({
+        memberId: member.id,
+        name: member.name,
+        email: member.email,
+        createdAt: member.createdAt.toISOString()
+      }));
+      setMembers(convertedMembers);
     } catch (error) {
       console.error('Failed to fetch members:', error);
       setMemberError('회원 목록을 불러오는 데 실패했습니다.');
@@ -207,7 +213,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleOpenPetModal = (pet: Partial<AdminPet> | null = null) => {
+  const handleOpenPetModal = (pet: Partial<Pet> | null = null) => {
     setEditingPet(pet);
     setIsPetModalOpen(true);
   };
@@ -221,12 +227,13 @@ export default function AdminPage() {
   const handleSavePet = async (petData: PetFormData) => {
     try {
       if (editingPet && editingPet.id) {
-        // FIX: 수정 시 DTO에 불필요한 id, petOwnerId, createdAt, 그리고 petStatuses 필드를 제거
-        const { id, petOwnerId, createdAt, petStatuses, ...updateData } = petData as any;
+        // 수정 시: UpdatePetRequest에 필요한 필드만 추출
+        const { id, ...updateData } = petData;
         
         await adminService.updatePet(editingPet.id.toString(), updateData as UpdatePetRequest);
         alert('펫 정보가 성공적으로 수정되었습니다.');
       } else {
+        // 등록 시: CreatePetRequest 타입으로 전달
         await adminService.createPet(petData as CreatePetRequest);
         alert('펫이 성공적으로 등록되었습니다.');
       }

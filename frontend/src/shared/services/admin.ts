@@ -1,16 +1,6 @@
 import { apiClient } from './apiClient';
 import { Pet, Member } from '../types';
 
-// 회원 관리 인터페이스 (기존 Member 타입과 일치)
-export interface AdminUser extends Member {
-  // Member 타입을 그대로 사용하되, 어드민에서 필요한 추가 필드가 있다면 여기에 추가
-}
-
-// 펫 관리 인터페이스 (기존 Pet 타입과 일치)
-export interface AdminPet extends Pet {
-  // Pet 타입을 그대로 사용하되, 어드민에서 필요한 추가 필드가 있다면 여기에 추가
-}
-
 // 펫 등록 요청 인터페이스
 export interface CreatePetRequest {
   name: string;
@@ -39,9 +29,9 @@ export const adminService = {
   // ===== 회원 관리 =====
   
   // 전체 회원 목록 조회
-  async getMembers(): Promise<AdminUser[]> {
+  async getMembers(): Promise<Member[]> {
     try {
-      const response = await apiClient.get<AdminUser[]>('/admin/members');
+      const response = await apiClient.get<Member[]>('/admin/members');
       if (response.success) {
         return response.content;
       } else {
@@ -55,9 +45,9 @@ export const adminService = {
   },
 
   // 특정 회원 정보 조회
-  async getMemberById(memberId: string): Promise<AdminUser> {
+  async getMemberById(memberId: string): Promise<Member> {
     try {
-      const response = await apiClient.get<AdminUser>(`/admin/members/${memberId}`);
+      const response = await apiClient.get<Member>(`/admin/members/${memberId}`);
       if (response.success) {
         return response.content;
       } else {
@@ -89,9 +79,9 @@ export const adminService = {
   // ===== 펫 관리 =====
 
   // 관리자 펫 등록
-  async createPet(petData: CreatePetRequest): Promise<AdminPet> {
+  async createPet(petData: CreatePetRequest): Promise<Pet> {
     try {
-      const response = await apiClient.post<AdminPet>('/admin/pets', petData);
+      const response = await apiClient.post<Pet>('/admin/pets', petData);
       if (response.success) {
         return response.content;
       } else {
@@ -104,10 +94,10 @@ export const adminService = {
     }
   },
 
-  // 관리자 펫 리스트 조회
-  async getPets(): Promise<AdminPet[]> {
+  // 전체 펫 목록 조회
+  async getPets(): Promise<Pet[]> {
     try {
-      const response = await apiClient.get<AdminPet[]>('/admin/pets');
+      const response = await apiClient.get<Pet[]>('/admin/pets');
       if (response.success) {
         return response.content;
       } else {
@@ -120,10 +110,10 @@ export const adminService = {
     }
   },
 
-  // 관리자 특정 펫 조회
-  async getPetById(petId: string): Promise<AdminPet> {
+  // 특정 펫 정보 조회
+  async getPetById(petId: string): Promise<Pet> {
     try {
-      const response = await apiClient.get<AdminPet>(`/admin/pets/${petId}`);
+      const response = await apiClient.get<Pet>(`/admin/pets/${petId}`);
       if (response.success) {
         return response.content;
       } else {
@@ -136,23 +126,23 @@ export const adminService = {
     }
   },
 
-  // 관리자 펫 정보 수정
-  async updatePet(petId: string, petData: UpdatePetRequest): Promise<AdminPet> {
+  // 펫 정보 수정
+  async updatePet(petId: string, petData: UpdatePetRequest): Promise<Pet> {
     try {
-      const response = await apiClient.put<AdminPet>(`/admin/pets/${petId}`, petData);
+      const response = await apiClient.put<Pet>(`/admin/pets/${petId}`, petData);
       if (response.success) {
         return response.content;
       } else {
-        console.error('펫 정보 수정 실패:', response.message);
+        console.error('펫 수정 실패:', response.message);
         throw new Error(response.message);
       }
     } catch (error) {
-      console.error('펫 정보 수정 실패:', error);
+      console.error('펫 수정 실패:', error);
       throw error;
     }
   },
 
-  // 관리자 펫 정보 삭제
+  // 펫 삭제
   async deletePet(petId: string): Promise<void> {
     try {
       const response = await apiClient.delete<void>(`/admin/pets/${petId}`);
