@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Header from '../../shared/components/layout/Header';
 import Footer from '../../shared/components/layout/Footer';
 import { memberService } from '../../shared/services/member';
-import { useAuth } from '../../shared/hooks/useAuth';
+import { useAuth } from '../../context/AuthContext';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -39,18 +39,16 @@ export default function LoginPage() {
       
       console.log('로그인 성공:', response);
       
-      // useAuth의 login 함수를 호출하여 상태와 localStorage를 한번에 업데이트
-      login(
-        { 
-          id: parseInt(response.userId.toString(), 10), 
-          email: response.userEmail, 
-          name: response.userName 
-        },
-        { 
-          accessToken: response.accessToken, 
-          refreshToken: response.refreshToken 
-        }
-      );
+      // context/AuthContext의 login 함수를 호출하여 상태와 localStorage를 한번에 업데이트
+      const userInfo = {
+        sub: response.userId.toString(),
+        auth: 'USER',
+        exp: Math.floor(Date.now() / 1000) + 3600, // 1시간 후 만료
+        nickname: response.userName,
+        email: response.userEmail,
+      };
+      
+      login(response.accessToken, response.refreshToken, userInfo);
       
       console.log('로그인 상태 업데이트 완료, 홈페이지로 이동합니다.');
       
