@@ -155,13 +155,6 @@ const ActionButtons = ({
   onSubmit: (e: React.FormEvent) => void; 
 }) => (
   <div className="pt-6 border-t border-gray-200 space-y-4">
-    <button
-      type="button"
-      onClick={() => window.location.href = `/chat?petId=${petId}`}
-      className="w-full py-3 px-6 rounded-lg font-semibold text-lg border-2 border-orange-500 text-orange-500 hover:bg-orange-50 transition-colors"
-    >
-      상담하기
-    </button>
     
     <button
       type="submit"
