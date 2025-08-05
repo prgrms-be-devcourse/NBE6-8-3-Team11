@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '17'  # 21에서 17로 변경
+          java-version: '17'
       - name: Gradle Cache
         uses: actions/cache@v4
         with:
@@ -46,7 +46,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '17'  # 21에서 17로 변경
+          java-version: '17'
       - name: Gradle Cache
         uses: actions/cache@v4
         with:
@@ -71,7 +71,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'  # 20에서 18로 변경
+          node-version: '18'
       - name: Cache node_modules
         uses: actions/cache@v4
         with:
@@ -95,17 +95,105 @@ jobs:
     needs:
       - backend-test
       - frontend-check
-    # 조직 레포에서만 실행 (Fork가 아닐 때)
     if: ${{ success() && github.repository == 'prgrms-be-devcourse/NBE6-8-2-Team11' }}
     steps:
       - name: Send Slack Notification
-        if: ${{ env.SLACK_WEBHOOK_URL != '' }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          echo "✅ CI 테스트 통과!"
-          echo "PR 정보:"
-          echo "- 제목: ${{ github.event.pull_request.title }}"
-          echo "- 작성자: ${{ github.event.pull_request.user.login }}"
-          echo "- PR 번호: ${{ github.event.pull_request.number }}"
-          echo "- URL: ${{ github.event.pull_request.html_url }}"
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "⚠️ SLACK_WEBHOOK_URL이 설정되지 않았습니다."
+            echo "GitHub Secrets에 SLACK_WEBHOOK_URL을 추가해주세요."
+            exit 0
+          fi
+          
+          # PR 정보 수집
+          pr_title="${{ github.event.pull_request.title }}"
+          pr_url="${{ github.event.pull_request.html_url }}"
+          pr_author="${{ github.event.pull_request.user.login }}"
+          pr_number="${{ github.event.pull_request.number }}"
+          
+          # Slack 메시지 생성
+          cat << EOF > slack_message.json
+          {
+            "blocks": [
+              {
+                "type": "header",
+                "text": {
+                  "type": "plain_text",
+                  "text": "🔔 새로운 PR 리뷰 요청!"
+                }
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*제목*\n\`\`\`${pr_title}\`\`\`"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*작성자*\n👤 @${pr_author}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*PR 번호*\n<${pr_url}|#${pr_number}>"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*저장소*\n🏠 Main Repo"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*상태*\n✅ CI 테스트 통과"
+                  }
+                ]
+              },
+              {
+                "type": "actions",
+                "elements": [
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "리뷰하러 가기 🚀"
+                    },
+                    "style": "primary",
+                    "url": "${pr_url}"
+                  },
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "변경사항 보기 📝"
+                    },
+                    "url": "${pr_url}/files"
+                  }
+                ]
+              },
+              {
+                "type": "context",
+                "elements": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "💡 모든 CI 테스트가 통과했습니다!"
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+          
+          # Slack으로 메시지 전송
+          curl -X POST -H 'Content-type: application/json' \
+            --data @slack_message.json \
+            "$SLACK_WEBHOOK_URL"
+          
+          if [ $? -eq 0 ]; then
+            echo "✅ Slack 알림 전송 완료!"
+          else
+            echo "❌ Slack 알림 전송 실패"
+          fi
