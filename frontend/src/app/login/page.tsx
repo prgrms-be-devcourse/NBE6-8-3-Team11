@@ -54,6 +54,7 @@ export default function LoginPage() {
         const decodedString = new TextDecoder('utf-8').decode(bytes);
         const decodedPayload = JSON.parse(decodedString);
         userInfo = {
+          id: decodedPayload.id || response.userId,
           sub: decodedPayload.sub,
           auth: decodedPayload.auth,
           exp: decodedPayload.exp,
@@ -62,6 +63,7 @@ export default function LoginPage() {
         };
       } catch (e) {
         userInfo = {
+          id: response.userId,
           sub: response.userId,
           nickname: response.userName,
           email: response.userEmail,
