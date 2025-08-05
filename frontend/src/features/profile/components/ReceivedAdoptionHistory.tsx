@@ -122,8 +122,8 @@ export default function ReceivedAdoptionHistory() {
       
       if (Array.isArray(timestamp)) {
         // 배열 형태의 날짜 처리 [year, month, day, hour, minute, second, nano]
-        const [year, month, day, hour, minute, second] = timestamp;
-        date = new Date(year, month - 1, day, hour, minute, second);
+        const [year, month, day, hour, minute] = timestamp;
+        date = new Date(year, month - 1, day, hour, minute);
       } else if (typeof timestamp === 'string') {
         // ISO 문자열인 경우 parseISO 사용
         if (timestamp.includes('T')) {
@@ -358,7 +358,7 @@ export default function ReceivedAdoptionHistory() {
                 <div className="flex flex-col space-y-2">
                   <button 
                     onClick={() => handleViewDetail(record.id, record.type)}
-                    className="text-sm text-orange-600 hover:text-orange-700 font-medium"
+                    className="text-sm text-gray-700 hover:text-gray-900 font-medium"
                   >
                     상세보기
                   </button>
