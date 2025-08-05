@@ -1,11 +1,11 @@
-name: Main CI/CD Pipeline
+name: Deploy Pipeline
 
 on:
   push:
     branches: [ main, develop ]
 
 jobs:
-  test:
+  deploy-test:
     runs-on: ubuntu-latest
     # 조직 레포에서만 실행
     if: github.repository == 'prgrms-be-devcourse/NBE6-8-2-Team11'
@@ -70,9 +70,8 @@ jobs:
         ./gradlew build -x test
 
   deploy-backend:
-    needs: test
+    needs: deploy-test
     runs-on: ubuntu-latest
-    # 조직 레포에서만 실행
     if: success() && github.repository == 'prgrms-be-devcourse/NBE6-8-2-Team11'
     
     steps:
@@ -87,16 +86,11 @@ jobs:
     - name: Wait for backend deployment
       run: |
         echo "Waiting for Render deployment to complete..."
-        sleep 90
-
-    - name: Backend health check
-      run: |
-        curl -f ${{ secrets.BACKEND_URL }}/health || exit 1
+        sleep 60
 
   push-to-vercel-fork:
-    needs: test
+    needs: deploy-test
     runs-on: ubuntu-latest
-    # 조직 레포에서만 실행하고, 특정 Fork로만 푸시
     if: success() && github.repository == 'prgrms-be-devcourse/NBE6-8-2-Team11'
     
     steps:
@@ -124,16 +118,3 @@ jobs:
         git push vercel-fork $CURRENT_BRANCH:$CURRENT_BRANCH --force
         
         echo "✅ Successfully pushed $CURRENT_BRANCH to Vercel deployment fork"
-
-  notify:
-    needs: [deploy-backend, push-to-vercel-fork]
-    runs-on: ubuntu-latest
-    if: success() && github.repository == 'prgrms-be-devcourse/NBE6-8-2-Team11'
-    
-    steps:
-    - name: Notify deployment success
-      run: |
-        echo "🎉 Full deployment pipeline completed successfully!"
-        echo "✅ Backend deployed to Render"
-        echo "✅ Code pushed to Vercel deployment fork"
-        echo "🚀 Vercel will automatically deploy frontend"

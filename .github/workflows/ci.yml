@@ -1,106 +1,111 @@
-name: Fork CI
-
+name: CI
 on:
-  push:
-    branches: [ main, develop ]
   pull_request:
-    branches: [ main, develop ]
+    branches:
+      - develop
+      - main
 
 jobs:
-  # Fork에서는 간단한 테스트만 수행
-  fork-test:
+  backend-build:
+    name: Backend - Build
     runs-on: ubuntu-latest
-    # Fork에서만 실행 (조직 레포가 아닐 때)
-    if: github.repository != 'prgrms-be-devcourse/NBE6-8-2-Team11'
-    
+    defaults:
+      run:
+        working-directory: ./backend
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'  # 21에서 17로 변경
+      - name: Gradle Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-
+      - name: Gradle Build Only
+        run: ./gradlew build -x test
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
-
-    - name: Setup JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-
-    - name: Install frontend dependencies
-      run: |
-        cd frontend
-        npm ci
-
-    - name: Frontend lint check
-      run: |
-        cd frontend
-        npm run lint
-
-    - name: Frontend build check
-      run: |
-        cd frontend
-        npm run build
-      env:
-        NEXT_PUBLIC_API_URL: https://nbe6-8-2-team11.onrender.com
-
-    - name: Backend build check
-      run: |
-        cd backend
-        chmod +x ./gradlew
-        ./gradlew build -x test
-
-    - name: Fork CI completed
-      run: |
-        echo "✅ Fork CI checks completed successfully!"
-        echo "📝 This is a development fork - no deployment performed"
-
-  # 원래 조직 레포용 CI (PR용)
-  main-repo-ci:
+  backend-test:
+    name: Backend - Test
     runs-on: ubuntu-latest
-    # 조직 레포에서만 실행
-    if: github.repository == 'prgrms-be-devcourse/NBE6-8-2-Team11' && github.event_name == 'pull_request'
-    
+    defaults:
+      run:
+        working-directory: ./backend
+    needs: backend-build
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'  # 21에서 17로 변경
+      - name: Gradle Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-
+      - name: Run Tests
+        run: ./gradlew test
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
+  frontend-check:
+    name: Frontend - Lint & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'  # 20에서 18로 변경
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npm-
+      - name: Install Dependencies
+        run: npm ci
+      - name: Run Lint
+        run: npm run lint
+      - name: Build Frontend
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: https://nbe6-8-2-team11.onrender.com
 
-    - name: Setup JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-
-    - name: Install frontend dependencies
-      run: |
-        cd frontend
-        npm ci
-
-    - name: Run frontend tests
-      run: |
-        cd frontend
-        npm run lint
-        npm run build
-      env:
-        NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-
-    - name: Run backend tests
-      run: |
-        cd backend
-        chmod +x ./gradlew
-        ./gradlew test
-        ./gradlew build
-
-    - name: PR CI completed
-      run: |
-        echo "✅ PR CI checks completed successfully!"
+  # CI 완료 후 Slack 알림
+  notify-slack:
+    name: Notify Slack
+    runs-on: ubuntu-latest
+    needs:
+      - backend-test
+      - frontend-check
+    # 조직 레포에서만 실행 (Fork가 아닐 때)
+    if: ${{ success() && github.repository == 'prgrms-be-devcourse/NBE6-8-2-Team11' }}
+    steps:
+      - name: Send Slack Notification
+        if: ${{ env.SLACK_WEBHOOK_URL != '' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          echo "✅ CI 테스트 통과!"
+          echo "PR 정보:"
+          echo "- 제목: ${{ github.event.pull_request.title }}"
+          echo "- 작성자: ${{ github.event.pull_request.user.login }}"
+          echo "- PR 번호: ${{ github.event.pull_request.number }}"
+          echo "- URL: ${{ github.event.pull_request.html_url }}"
