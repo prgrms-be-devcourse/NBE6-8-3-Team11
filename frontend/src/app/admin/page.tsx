@@ -138,14 +138,7 @@ export default function AdminPage() {
     setMemberError('');
     try {
       const memberData = await adminService.getMembers();
-      // Member 타입을 MemberData로 변환
-      const convertedMembers: MemberData[] = memberData.map(member => ({
-        memberId: member.id,
-        name: member.name,
-        email: member.email,
-        createdAt: member.createdAt.toISOString()
-      }));
-      setMembers(convertedMembers);
+      setMembers(memberData as any);
     } catch (error) {
       console.error('Failed to fetch members:', error);
       setMemberError('회원 목록을 불러오는 데 실패했습니다.');
@@ -227,13 +220,12 @@ export default function AdminPage() {
   const handleSavePet = async (petData: PetFormData) => {
     try {
       if (editingPet && editingPet.id) {
-        // 수정 시: UpdatePetRequest에 필요한 필드만 추출
-        const { id, ...updateData } = petData;
+        // FIX: 수정 시 DTO에 불필요한 id, petOwnerId, createdAt, 그리고 petStatuses 필드를 제거
+        const { id, petOwnerId, createdAt, petStatuses, ...updateData } = petData as any;
         
         await adminService.updatePet(editingPet.id.toString(), updateData as UpdatePetRequest);
         alert('펫 정보가 성공적으로 수정되었습니다.');
       } else {
-        // 등록 시: CreatePetRequest 타입으로 전달
         await adminService.createPet(petData as CreatePetRequest);
         alert('펫이 성공적으로 등록되었습니다.');
       }
