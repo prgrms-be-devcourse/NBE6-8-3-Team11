@@ -378,7 +378,7 @@ function ApplyPageContent() {
         contactName: currentUser?.name || '',
         contactEmail: currentUser?.email || '',
         contactPhone: currentUser?.phone || '',
-        address: '', 
+        address: currentUser?.address || '', 
       }));
       
     };

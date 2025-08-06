@@ -6,6 +6,7 @@ export interface User {
   name: string;
   phone?: string;
   role: string;
+  address?: string;
 }
 
 export interface LoginRequest {
