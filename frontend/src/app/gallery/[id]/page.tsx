@@ -84,11 +84,13 @@ export default function AnimalDetailPage() {
     if (!userInfo || !userInfo.id) return;
 
     const token = localStorage.getItem('accessToken');
-    if (token && userInfo && userInfo.id) {
-      console.log('Gallery page - Connecting WebSocket with userId:', userInfo.id);
+    const userId = userInfo.id;
+    
+    if (token && userId) {
+      console.log('Gallery page - Connecting WebSocket with userId:', userId);
       
       // WebSocket 연결
-      wsClient.connect(token, userInfo.id);
+      wsClient.connect(token, userId);
       
       // 알림 구독
       setTimeout(() => {
@@ -104,7 +106,7 @@ export default function AnimalDetailPage() {
           title: notification.title || '새 알림',
           message: notification.message || notification.content || '새로운 알림이 도착했습니다.',
           type: (notification.type as 'NEW_MESSAGE' | 'ADOPTION_REQUESTED' | 'ADOPTION_ACCEPTED' | 'ADOPTION_REJECTED' | 'CARE_REQUESTED' | 'CARE_ACCEPTED' | 'CARE_REJECTED' | 'CHAT_ROOM_DELETED') || 'NEW_MESSAGE',
-          userId: userInfo.id || 0,
+          userId: userId || 0,
         });
       };
 

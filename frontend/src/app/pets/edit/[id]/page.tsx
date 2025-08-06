@@ -72,8 +72,8 @@ export default function PetEditPage() {
       // 여러 방법으로 사용자 ID 확인
       let currentUserId: number;
       
-      if (userInfo.id) {
-        currentUserId = typeof userInfo.id === 'number' ? userInfo.id : parseInt(userInfo.id.toString(), 10);
+      if (userInfo.id && userInfo.id !== null && userInfo.id !== undefined) {
+        currentUserId = typeof userInfo.id === 'number' ? userInfo.id : parseInt(String(userInfo.id), 10);
       } else if (userInfo.sub) {
         currentUserId = parseInt(userInfo.sub, 10);
       } else {
