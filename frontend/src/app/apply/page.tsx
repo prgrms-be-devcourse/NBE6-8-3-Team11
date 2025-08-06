@@ -292,7 +292,8 @@ function ApplyPageContent() {
   const petIdFromUrl = searchParams.get('petId');
   
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
-  const [currentUser, setCurrentUser] = useState<Member | null>(null); // 추가됨
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [currentUser, setCurrentUser] = useState<Member | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');

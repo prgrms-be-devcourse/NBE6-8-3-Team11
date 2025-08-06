@@ -1,5 +1,25 @@
 // JWT 토큰 디코딩 유틸리티
-export function decodeJWT(token: string): any {
+
+interface JWTPayload {
+  id?: number;
+  sub?: string;
+  auth?: string;
+  exp?: number;
+  nickname?: string;
+  email?: string;
+  [key: string]: unknown;
+}
+
+interface UserInfo {
+  id?: number;
+  sub?: string;
+  auth: string;
+  exp?: number;
+  nickname?: string;
+  email?: string;
+}
+
+export function decodeJWT(token: string): JWTPayload | null {
   try {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -11,7 +31,7 @@ export function decodeJWT(token: string): any {
         })
         .join('')
     );
-    return JSON.parse(jsonPayload);
+    return JSON.parse(jsonPayload) as JWTPayload;
   } catch (error) {
     console.error('Failed to decode JWT:', error);
     return null;
@@ -19,7 +39,7 @@ export function decodeJWT(token: string): any {
 }
 
 // JWT 토큰에서 사용자 정보 추출
-export function getUserInfoFromToken(token: string): any {
+export function getUserInfoFromToken(token: string): UserInfo | null {
   const payload = decodeJWT(token);
   if (!payload) return null;
   

@@ -184,7 +184,7 @@ export default function ReceivedAdoptionHistory() {
     }
   };
 
-  const handleDeleteApplication = async (recordId: number, type: string) => {
+  const handleDeleteApplication = async (recordId: number, _type: string) => {
     if (!confirm('정말로 이 신청을 삭제하시겠습니까?')) return;
     
     try {

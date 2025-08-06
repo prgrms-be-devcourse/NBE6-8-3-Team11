@@ -11,6 +11,7 @@ function OAuth2RedirectHandler() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { login } = useAuth();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { memberType } = useMemberType();
   const hasProcessed = useRef(false);
 
@@ -44,15 +45,15 @@ function OAuth2RedirectHandler() {
 
       } catch (error) {
         console.error("토큰 처리 중 오류 발생:", error);
-        hasProcessed.current = true; // 오류가 발생해도 처리 완료로 표시
+        hasProcessed.current = true;
         router.replace('/');
       }
     } else {
       console.warn("URL에 accessToken이 없습니다.");
-      hasProcessed.current = true; // 토큰이 없어도 처리 완료로 표시
+      hasProcessed.current = true;
       router.replace('/');
     }
-  }, []); 
+  }, [login, router, searchParams]); 
 
   return (
     <div className="flex items-center justify-center min-h-screen">

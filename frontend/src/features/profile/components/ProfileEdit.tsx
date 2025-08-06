@@ -10,6 +10,7 @@ interface ProfileEditProps {
 }
 
 export default function ProfileEdit({ user, setUser }: ProfileEditProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { memberType, setMemberType, getMemberType, tempFormData, setTempFormData, clearTempFormData } = useMemberType();
 
   const [formData, setFormData] = useState({
