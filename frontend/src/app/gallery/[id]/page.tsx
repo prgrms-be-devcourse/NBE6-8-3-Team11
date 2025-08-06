@@ -25,8 +25,40 @@ export default function AnimalDetailPage() {
   const [isCreatingChat, setIsCreatingChat] = useState(false);
 
   // 현재 사용자가 펫의 소유자인지 확인
-  const isOwner = userInfo && pet ? (userInfo.id || parseInt(userInfo.sub, 10)) === pet.petOwnerId : false;
-  const isAdmin = userInfo?.auth?.includes('ADMIN');
+  const isOwner = userInfo && pet ? (() => {
+    // 여러 방법으로 사용자 ID 확인
+    let currentUserId: number;
+    
+    if (userInfo.id) {
+      currentUserId = typeof userInfo.id === 'number' ? userInfo.id : parseInt(userInfo.id.toString(), 10);
+    } else if (userInfo.sub) {
+      currentUserId = parseInt(userInfo.sub, 10);
+    } else {
+      // localStorage에서 userInfo 다시 확인
+      const storedUserInfo = localStorage.getItem('userInfo');
+      if (storedUserInfo) {
+        try {
+          const parsedUserInfo = JSON.parse(storedUserInfo);
+          currentUserId = parseInt(parsedUserInfo.id || parsedUserInfo.sub || '0', 10);
+        } catch {
+          currentUserId = 0;
+        }
+      } else {
+        currentUserId = 0;
+      }
+    }
+    
+    console.log('갤러리 소유자 확인:', {
+      currentUserId,
+      petOwnerId: pet.petOwnerId,
+      isOwner: currentUserId === pet.petOwnerId,
+      userInfo
+    });
+    
+    return currentUserId === pet.petOwnerId;
+  })() : false;
+  
+  const isAdmin = userInfo?.auth?.includes('ADMIN') || userInfo?.auth === 'ROLE_ADMIN';
 
   useEffect(() => {
     if (!params?.id) return;
