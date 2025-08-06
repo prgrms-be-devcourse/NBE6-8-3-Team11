@@ -92,8 +92,6 @@ export default function AnimalDetailPage() {
     try {
       setIsCreatingChat(true);
       const currentUserId = parseInt(userInfo.sub, 10);
-      console.log('currentUserId: ', currentUserId);
-      console.log('pet.petOwnerId: ', pet.petOwnerId);
       
       // 채팅방 생성
       const chatRoom = await chatService.createChatRoom({
@@ -101,8 +99,13 @@ export default function AnimalDetailPage() {
         secondMemberId: pet.petOwnerId,
       });
 
+      // 채팅방에 바로 입장하여 상대방에게 알림 전송 (무조건 실행)
+      if (wsClient.getConnectionStatus()) {
+        wsClient.joinChatRoom(chatRoom.id, currentUserId);
+      }
+
       // 알림을 받을 시간을 위해 약간의 지연 추가
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       // 채팅 페이지로 이동
       router.push(`/allchat?roomId=${chatRoom.id}&petName=${encodeURIComponent(pet.name)}`);
