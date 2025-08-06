@@ -44,8 +44,8 @@ class WebSocketClient {
     // 환경에 따른 WebSocket URL 설정
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
     const wsEndpoint = `${apiUrl}/ws-chat`;
-    
-    
+
+
     this.client = new Client({
       webSocketFactory: () => new WebSocket("wss://nbe6-8-2-team11.onrender.com/ws-chat"),
       connectHeaders: {
@@ -64,17 +64,17 @@ class WebSocketClient {
       const wasConnected = this.isConnected;
       this.isConnected = true;
       this.reconnectAttempts = 0; // 연결 성공 시 재시도 횟수 리셋
-      
+
       // 연결 상태가 변경된 경우에만 핸들러 호출
       if (!wasConnected) {
         this.connectionStatusHandlers.forEach(handler => handler(true));
       }
-      
+
       // 연결이 완전히 설정된 후에 구독 처리
       setTimeout(() => {
         // 개인 알림 구독
         this.subscribeToPersonalNotifications();
-        
+
         // 대기 중인 구독 요청들 처리
         this.processPendingSubscriptions();
       }, 100); // 100ms 지연으로 연결 안정화
@@ -84,7 +84,7 @@ class WebSocketClient {
       console.log('WebSocket disconnected');
       const wasConnected = this.isConnected;
       this.isConnected = false;
-      
+
       // 연결 상태가 변경된 경우에만 핸들러 호출
       if (wasConnected) {
         this.connectionStatusHandlers.forEach(handler => handler(false));
@@ -100,7 +100,7 @@ class WebSocketClient {
       });
       this.isConnected = false;
       this.connectionStatusHandlers.forEach(handler => handler(false));
-      
+
       // 재연결 시도
       if (this.reconnectAttempts < this.maxReconnectAttempts) {
         this.reconnectAttempts++;
@@ -151,10 +151,10 @@ class WebSocketClient {
             content: '입장',
           })
         });
-        
+
         // 채팅방 토픽 구독
         this.subscribeToRoom(roomId);
-        
+
         console.log('Joined and subscribed to chat room:', roomId);
       } catch (error) {
         console.error('Failed to join chat room:', error);
@@ -225,7 +225,7 @@ class WebSocketClient {
     if (this.client && this.isConnected) {
       try {
         console.log(`Attempting to subscribe to room: /topic/chat/${roomId}`);
-        
+
         if (this.subscribedRooms.has(roomId)) {
           console.log(`Already subscribed to room ${roomId}`);
           return;
@@ -236,7 +236,7 @@ class WebSocketClient {
             console.log(`Received message from /topic/chat/${roomId}:`, message.body);
             const response = JSON.parse(message.body);
             console.log('Parsed message response:', response);
-            
+
             // 백엔드 응답 형식을 프론트엔드 형식으로 변환
             const chatMessage: ChatMessage = {
               id: response.messageId, // messageId를 id로 매핑
@@ -246,14 +246,14 @@ class WebSocketClient {
               senderName: response.senderName,
               roomId: response.roomId,
             };
-            
+
             console.log('Converted chat message:', chatMessage);
             this.messageHandlers.forEach(handler => handler(chatMessage));
           } catch (error) {
             console.error('Failed to parse message:', error);
           }
         });
-        
+
         this.subscribedRooms.add(roomId);
         console.log(`Successfully subscribed to room: /topic/chat/${roomId}`);
       } catch (error) {
@@ -275,10 +275,10 @@ class WebSocketClient {
     try {
       const notificationDestination = `/queue/notifications/${this.currentUserId}`;
       const chatRoomDestination = `/queue/chat-rooms/${this.currentUserId}`;
-      
+
       console.log('Subscribing to notifications at:', notificationDestination);
       console.log('Subscribing to chat room updates at:', chatRoomDestination);
-      
+
       // 사용자별 알림 큐 구독
       this.client.subscribe(notificationDestination, (message: Message) => {
         try {
@@ -323,4 +323,4 @@ class WebSocketClient {
   }
 }
 
-export const wsClient = new WebSocketClient(); 
+export const wsClient = new WebSocketClient();
