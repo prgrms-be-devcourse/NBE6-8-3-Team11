@@ -45,7 +45,6 @@ class WebSocketClient {
     const wsUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
     const wsEndpoint = `${wsUrl}/ws-chat`;
     
-    console.log('Connecting to WebSocket:', wsEndpoint);
     
     this.client = new Client({
       webSocketFactory: () => new SockJS(wsEndpoint),
