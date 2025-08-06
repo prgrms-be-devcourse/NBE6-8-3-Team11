@@ -63,14 +63,22 @@ export default function ReceivedAdoptionHistory() {
           type: app.type as 'ADOPTION' | 'CARE',
           status: app.status,
           createdAt: app.createdAt,
-          memberName: '신청자 정보 없음',
+          memberName: app.memberInfo?.name || '신청자 정보 없음',
           memberPhone: '',
-          memberEmail: '',
+          memberEmail: app.memberInfo?.email || '',
           memberAddress: '',
           anotherPets: '',
           experience: '',
           message: '',
-          petInfo: undefined,
+          petInfo: app.petInfo ? {
+            id: parseInt(app.petInfo.id),
+            name: app.petInfo.name,
+            species: app.petInfo.species,
+            age: app.petInfo.age,
+            gender: app.petInfo.gender,
+            imageUrl: app.petInfo.imageUrl,
+            shelterName: app.petInfo.shelterName
+          } : undefined,
           desiredStartDate: undefined,
           desiredEndDate: undefined
         }));
