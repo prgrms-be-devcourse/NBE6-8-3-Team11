@@ -7,6 +7,10 @@ export interface AdoptionApplication {
   type: 'ADOPTION' | 'CARE';
   status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
   createdAt: string;
+  memberInfo?: {
+    name: string;
+    email: string;
+  };
   petInfo?: {
     id: string;
     name: string;
