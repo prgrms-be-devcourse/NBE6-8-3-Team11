@@ -315,18 +315,41 @@ function ApplyPageContent() {
     const loadInitialData = async () => {
       try {
         setIsLoading(true);
-        
         if (!petIdFromUrl) {
           throw new Error("Pet ID is missing from URL.");
         }
 
-        // 1. 동물 정보 가져오기
-        const petData = await petService.getPet(petIdFromUrl);
+        // API 호출을 병렬로 처리하여 로딩 속도 개선
+        const [petData, userData] = await Promise.all([
+          petService.getPet(petIdFromUrl),
+          memberService.getCurrentUser()
+        ]);
+
         setSelectedPet(petData);
-        
-        // 2. 사용자 정보 가져오기 (API 호출) - 새로 추가됨
-        const userData = await memberService.getCurrentUser();
         setCurrentUser(userData as Member);
+
+        // 동물 상태에 따라 기본 신청 유형 설정
+        let defaultApplicationType: 'adoption' | 'care' = 'adoption';
+        const { petStatuses } = petData;
+        if (petStatuses && petStatuses.length > 0) {
+          const canAdopt = petStatuses.includes('AVAILABLE_FOR_ADOPTION');
+          const canCare = petStatuses.includes('AVAILABLE_FOR_CARE');
+          if (!canAdopt && canCare) {
+            defaultApplicationType = 'care';
+          }
+        }
+        
+        // API에서 직접 받아온 userData 객체를 사용해 폼 데이터 상태를 설정합니다.
+        setFormData(prev => ({ 
+          ...prev, 
+          petId: petData.id,
+          applicationType: defaultApplicationType,
+          contactName: userData?.name || '',
+          contactEmail: userData?.email || '',
+          contactPhone: userData?.phone || '',
+          address: userData?.address || '', // 이제 address 값이 정상적으로 설정됩니다.
+        }));
+
       } catch (error) {
         console.error('Failed to load initial data:', error);
         setSubmitMessage('페이지를 불러오는 데 실패했습니다.');
@@ -337,54 +360,7 @@ function ApplyPageContent() {
     
     loadInitialData();
   }, [petIdFromUrl]);
-
-  useEffect(() => {
-    const loadPetData = async () => {
-      
-      if (!petIdFromUrl) {
-        return;
-      }
-      
-      // 동물 정보만 로딩
-      const petData = await petService.getPet(petIdFromUrl);
-      setSelectedPet(petData);
-      
-      // petStatuses에 따라 기본 선택값 설정
-      let defaultApplicationType: 'adoption' | 'care' = 'adoption';
-      
-      if (petData.petStatuses && petData.petStatuses.length > 0) {
-        const canAdopt = petData.petStatuses.some((status) => 
-          status === 'AVAILABLE_FOR_ADOPTION' || status === 'AVAILABLE_BOTH'
-        );
-        const canCare = petData.petStatuses.some((status) => 
-          status === 'AVAILABLE_FOR_CARE' || status === 'AVAILABLE_BOTH'
-        );
-        
-        // 입양 및 돌봄 모두 가능하면 입양을 기본값으로 설정
-        if (canAdopt && canCare) {
-          defaultApplicationType = 'adoption';
-        } else if (canAdopt) {
-          defaultApplicationType = 'adoption';
-        } else if (canCare) {
-          defaultApplicationType = 'care';
-        }
-      }
-      
-      setFormData(prev => ({ 
-        ...prev, 
-        petId: petData.id,
-        applicationType: defaultApplicationType,
-        // 사용자 정보로 폼 필드 자동 채우기
-        contactName: currentUser?.name || '',
-        contactEmail: currentUser?.email || '',
-        contactPhone: currentUser?.phone || '',
-        address: currentUser?.address || '', 
-      }));
-      
-    };
-
-    loadPetData();
-  }, [petIdFromUrl, currentUser]);
+  
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
