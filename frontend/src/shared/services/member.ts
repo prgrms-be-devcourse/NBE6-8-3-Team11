@@ -102,4 +102,4 @@ export const memberService = {
     const response = await apiClient.get<User>(`/members/${userId}`);
     return response.content;
   },
-}; 
+};
