@@ -7,7 +7,7 @@ package com.back.global.common
 data class ApiResponse<T>(
     val success: Boolean,
     val code: String,
-    val message: String,
+    val message: String?,
     val content: T?
 ) {
     companion object {
@@ -33,7 +33,7 @@ data class ApiResponse<T>(
         }
 
         // 실패 응답 생성 메서드
-        fun <T> fail(code: String, message: String): ApiResponse<T?> {
+        fun <T> fail(code: String, message: String?): ApiResponse<T?> {
             return ApiResponse(
                 success = false,
                 code = code,

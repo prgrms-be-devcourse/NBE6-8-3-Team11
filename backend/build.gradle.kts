@@ -1,5 +1,7 @@
 plugins {
-    java
+    kotlin("jvm") version "1.9.25"
+    kotlin("plugin.spring") version "1.9.25"
+    kotlin("plugin.jpa") version "1.9.25"
     id("org.springframework.boot") version "3.5.3"
     id("io.spring.dependency-management") version "1.1.7"
 }
@@ -58,12 +60,20 @@ dependencies {
 
     // WebSocket
     implementation ("org.springframework.boot:spring-boot-starter-websocket")
+
+    // Kotlin dependencies
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-tasks.withType<JavaCompile> {
-    options.compilerArgs.add("-parameters")
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+        freeCompilerArgs += "-Xjsr305=strict"
+        jvmTarget = "21"
+    }
 }

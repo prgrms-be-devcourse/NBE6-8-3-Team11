@@ -9,9 +9,11 @@ interface AdoptionRepository : JpaRepository<Adoption, Long> {
 
     fun findByIdAndMember(id: Long, member: Member): Adoption?
 
+    // 언더스코어 주의 문제 다시 체킹
     fun findByIdAndPet_Member(id: Long, member: Member): Adoption?
 
     fun findByMember(member: Member): List<Adoption>
 
+    // 언더스코어 주의 문제 다시 체킹
     fun findByPet_MemberOrderByCreatedAtDesc(member: Member): List<Adoption>
 }

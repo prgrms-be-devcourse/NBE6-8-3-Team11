@@ -1,5 +1,6 @@
 package com.back.global.exception
 
+import com.back.domain.chat.exception.ChatException
 import com.back.domain.member.exception.MemberException
 import com.back.domain.pet.exception.PetException
 import com.back.global.common.ApiResponse
@@ -25,7 +26,7 @@ class GlobalExceptionHandler {
     @ExceptionHandler(CustomException::class)
     fun handleCustomException(e: CustomException): ResponseEntity<ApiResponse<Void?>> {
         log.info(e.message, e)
-        val response = ApiResponse.fail<Void>(e.code, e.message)
+        val response = ApiResponse.fail<Void>(e.code, e.errorCode.message)
         return ResponseEntity.status(e.httpStatus).body(response)
     }
 
@@ -62,6 +63,13 @@ class GlobalExceptionHandler {
         log.warn("handleAccessDeniedException", e)
         val response = ApiResponse.fail<Void>("AUTH-403", "접근 권한이 없습니다")
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response)
+    }
+
+    @ExceptionHandler(ChatException::class)
+    fun handleChatException(e: ChatException): ResponseEntity<ApiResponse<Void?>> {
+        log.info(e.message, e)
+        val response = ApiResponse.fail<Void>(e.code, e.chatErrorCode.message)
+        return ResponseEntity.status(e.httpStatus).body(response)
     }
 
     // 커스텀 예외는 다 이 위로 작성해야 함
