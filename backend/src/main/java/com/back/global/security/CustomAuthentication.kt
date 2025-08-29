@@ -10,14 +10,9 @@ class CustomAuthentication(
     private val authentication: Authentication,
     val member: Member
 ) : Authentication by authentication {
-    //클래스 위임으로 간단하게
 
     override fun getAuthorities(): Collection<GrantedAuthority> {
         return listOf(SimpleGrantedAuthority("ROLE_" + member.role.name))
-    }
-
-    fun getMember(): Member {
-        return member
     }
 
     companion object {
