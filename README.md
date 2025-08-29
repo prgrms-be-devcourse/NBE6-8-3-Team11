@@ -257,7 +257,6 @@ MYSQL_PASSWORD=your-password
 5. 리뷰 & 승인 후 머지
 6. **자동 배포 완료** 🚀
 
-> 📚 **자세한 배포 가이드**: [`DEPLOYMENT_GUIDE.md`](./DEPLOYMENT_GUIDE.md) 참고
 
 ---
 
