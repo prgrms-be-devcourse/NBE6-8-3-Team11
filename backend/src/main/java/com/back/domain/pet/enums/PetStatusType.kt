@@ -1,5 +1,5 @@
-package com.back.domain.pet.enums;
+package com.back.domain.pet.enums
 
-public enum PetStatusType {
+enum class PetStatusType {
     AVAILABLE_BOTH, AVAILABLE_FOR_ADOPTION, ADOPTED, AVAILABLE_FOR_CARE, CARE_IN_PROGRESS, CARE_COMPLETED
 }
