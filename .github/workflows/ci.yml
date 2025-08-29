@@ -1,57 +1,201 @@
 name: CI
-
 on:
-  push:
-    branches:
-      - develop
   pull_request:
     branches:
       - develop
+      - main
+    # push 이벤트 제거 - PR에서만 실행
 
 jobs:
-  frontend:
-    name: Frontend Build & Test
+  backend-build:
+    name: Backend - Build
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
     steps:
-      - uses: actions/checkout@v3
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 24
-      
-      - name: Install dependencies (frontend)
-        working-directory: ./frontend
-        run: npm install
-      
-      - name: Run frontend tests
-        working-directory: ./frontend
-        run: npm test || true
-      
-      - name: Build frontend
-        working-directory: ./frontend
-        run: npm run build
-
-  backend:
-    name: Backend Build & Test
-    runs-on: ubuntu-latest
-    needs: frontend
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Set up JDK 21
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '21'
+      - name: Gradle Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-
+      - name: Gradle Build Only
+        run: ./gradlew build -x test
 
-      - name: Grant execute permission to gradlew
+  backend-test:
+    name: Backend - Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
         working-directory: ./backend
-        run: chmod +x ./gradlew
+    needs: backend-build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Gradle Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-
+      - name: Run Tests
+        run: ./gradlew test
 
-      - name: Build and test backend
-        working-directory: ./backend
+  frontend-check:
+    name: Frontend - Lint & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npm-
+      - name: Install Dependencies
+        run: npm ci
+      - name: Run Lint
+        run: npm run lint
+      - name: Build Frontend
+        run: npm run build
         env:
-          REDIS_HOST: localhost
-          REDIS_PORT: 6379
-        run: ./gradlew clean build
+          NEXT_PUBLIC_API_URL: https://nbe6-8-2-team11.onrender.com
+
+  # CI 완료 후 Slack 알림 - PR에서만!
+  notify-slack:
+    name: Notify Slack
+    runs-on: ubuntu-latest
+    needs:
+      - backend-test
+      - frontend-check
+    # 조직 레포의 PR에서만 실행 (Fork PR도 포함)
+    if: ${{ success() && github.repository == 'prgrms-be-devcourse/NBE6-8-3-Team11' && github.event_name == 'pull_request' }}
+    steps:
+      - name: Send Slack Notification
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "⚠️ SLACK_WEBHOOK_URL이 설정되지 않았습니다."
+            echo "GitHub Secrets에 SLACK_WEBHOOK_URL을 추가해주세요."
+            exit 0
+          fi
+          
+          # PR 정보 수집
+          pr_title="${{ github.event.pull_request.title }}"
+          pr_url="${{ github.event.pull_request.html_url }}"
+          pr_author="${{ github.event.pull_request.user.login }}"
+          pr_number="${{ github.event.pull_request.number }}"
+          
+          # Slack 메시지 생성
+          cat << EOF > slack_message.json
+          {
+            "blocks": [
+              {
+                "type": "header",
+                "text": {
+                  "type": "plain_text",
+                  "text": "🔔 새로운 PR 리뷰 요청!"
+                }
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*제목*\n\`\`\`${pr_title}\`\`\`"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*작성자*\n👤 @${pr_author}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*PR 번호*\n<${pr_url}|#${pr_number}>"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*저장소*\n🏠 Main Repo"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*상태*\n✅ CI 테스트 통과"
+                  }
+                ]
+              },
+              {
+                "type": "actions",
+                "elements": [
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "리뷰하러 가기 🚀"
+                    },
+                    "style": "primary",
+                    "url": "${pr_url}"
+                  },
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "변경사항 보기 📝"
+                    },
+                    "url": "${pr_url}/files"
+                  }
+                ]
+              },
+              {
+                "type": "context",
+                "elements": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "💡 모든 CI 테스트가 통과했습니다!"
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+          
+          # Slack으로 메시지 전송
+          curl -X POST -H 'Content-type: application/json' \
+            --data @slack_message.json \
+            "$SLACK_WEBHOOK_URL"
+          
+          if [ $? -eq 0 ]; then
+            echo "✅ Slack 알림 전송 완료!"
+          else
+            echo "❌ Slack 알림 전송 실패"
+          fi
