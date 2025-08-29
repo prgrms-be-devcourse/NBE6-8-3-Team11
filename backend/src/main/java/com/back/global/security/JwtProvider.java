@@ -1,6 +1,7 @@
 package com.back.global.security;
 
 import com.back.domain.member.dto.response.TokenResponseDto;
+import com.back.domain.member.entity.Member;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -46,13 +47,40 @@ public class JwtProvider {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
+        String email = null;
+        String nickname = null;
+        Long id = null;
+
+        Object principal = authentication.getPrincipal();
+        
+        // CustomAuthentication인 경우 (일반 로그인)
+        if (authentication instanceof CustomAuthentication) {
+            CustomAuthentication customAuth = (CustomAuthentication) authentication;
+            Member member = customAuth.getMember();
+            email = member.getEmail();
+            nickname = member.getName();
+            id = member.getId();
+        } else if (principal instanceof CustomOAuth2User) {
+            // OAuth2 로그인인 경우
+            CustomOAuth2User customOAuth2User = (CustomOAuth2User) principal;
+            email = customOAuth2User.getEmail();
+            nickname = customOAuth2User.getNickname();
+            id = customOAuth2User.getId();
+        } else if (principal instanceof UserDetails) {
+            // 기본 UserDetails인 경우
+            email = ((UserDetails) principal).getUsername();
+        }
+
         long now = (new Date()).getTime();
 
         // Access Token 생성
         Date accessTokenExpiresIn = new Date(now + this.accessTokenExpiration);
         String accessToken = Jwts.builder()
-                .setSubject(authentication.getName())
+                .setSubject(email)
                 .claim("auth", authorities)
+                .claim("email", email)
+                .claim("nickname", nickname)
+                .claim("id", id)
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
@@ -60,6 +88,7 @@ public class JwtProvider {
         // Refresh Token 생성
         Date refreshTokenExpiresIn = new Date(now + this.refreshTokenExpiration);
         String refreshToken = Jwts.builder()
+                .setSubject(email)
                 .setExpiration(refreshTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
@@ -67,7 +96,7 @@ public class JwtProvider {
         return TokenResponseDto.builder()
                 .grantType("Bearer")
                 .accessToken(accessToken)
-                .refreshToken(refreshToken) // RefreshToken 추가
+                .refreshToken(refreshToken)
                 .build();
     }
 
@@ -85,7 +114,9 @@ public class JwtProvider {
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
 
-        UserDetails principal = new User(claims.getSubject(), "", authorities);
+        String email = (String) claims.get("email");
+        // 기존 claims.getSubject()는 고유 id를 반환 -> email 로 변경
+        UserDetails principal = new User(email, "", authorities);
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
     }
 

@@ -2,6 +2,7 @@ package com.back.domain.adoption.entity;
 
 
 import com.back.domain.adoption.enums.RequestStatus;
+import com.back.domain.applicant.entity.Applicant;
 import com.back.domain.member.entity.Member;
 import com.back.domain.notification.entity.Notification;
 import com.back.domain.pet.entity.Pet;
@@ -19,6 +20,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -45,6 +47,13 @@ public class Adoption {
     @Column(name = "adoption_title", nullable = false)
     private String title;
 
+    @Column(name = "adoption_another_pets")
+    private String anotherPets;
+
+    @Lob
+    @Column(name = "adoption_experience")
+    private String experience;
+
     @Lob
     @Column(name = "adoption_message", nullable = false)
     private String message;
@@ -55,6 +64,10 @@ public class Adoption {
 
     @CreatedDate
     private LocalDateTime createdAt;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "applicant_id")
+    private Applicant applicant;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
@@ -68,12 +81,16 @@ public class Adoption {
     private List<Notification> notifications = new ArrayList<>();
 
     @Builder
-    public Adoption(String title, String message, RequestStatus status, Member member, Pet pet) {
+    public Adoption(String title, String anotherPets, String experience, String message, RequestStatus status,
+                        Member member, Pet pet, Applicant applicant) {
         this.title = title;
         this.message = message;
         this.status = status;
         this.member = member;
         this.pet = pet;
+        this.anotherPets = anotherPets;
+        this.experience = experience;
+        this.applicant = applicant;
     }
 
     public void updateStatus(RequestStatus status) {

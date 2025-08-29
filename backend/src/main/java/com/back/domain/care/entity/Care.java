@@ -1,6 +1,7 @@
 package com.back.domain.care.entity;
 
 import com.back.domain.adoption.enums.RequestStatus;
+import com.back.domain.applicant.entity.Applicant;
 import com.back.domain.member.entity.Member;
 import com.back.domain.notification.entity.Notification;
 import com.back.domain.pet.entity.Pet;
@@ -18,6 +19,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -44,6 +46,13 @@ public class Care {
     @Column(name = "care_title", nullable = false)
     private String title;
 
+    @Column(name = "care_another_pets")
+    private String anotherPets;
+
+    @Lob
+    @Column(name = "care_experience")
+    private String experience;
+
     @Lob
     @Column(name = "care_message", nullable = false)
     private String message;
@@ -61,6 +70,10 @@ public class Care {
     @CreatedDate
     private LocalDateTime createdAt;
 
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "applicant_id")
+    private Applicant applicant;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
@@ -73,8 +86,8 @@ public class Care {
     private List<Notification> notifications = new ArrayList<>();
 
     @Builder
-    public Care(String title, String message, LocalDateTime desiredStartDate,
-                LocalDateTime desiredEndDate, RequestStatus status, Member member, Pet pet) {
+    public Care(String title, String message, LocalDateTime desiredStartDate, String anotherPets, String experience,
+                LocalDateTime desiredEndDate, RequestStatus status, Member member, Pet pet, Applicant applicant) {
         this.title = title;
         this.message = message;
         this.desiredStartDate = desiredStartDate;
@@ -82,6 +95,9 @@ public class Care {
         this.status = status;
         this.member = member;
         this.pet = pet;
+        this.anotherPets = anotherPets;
+        this.experience = experience;
+        this.applicant = applicant;
     }
 
     public void updateStatus(RequestStatus status) {

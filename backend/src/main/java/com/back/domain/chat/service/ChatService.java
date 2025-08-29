@@ -14,6 +14,8 @@ import com.back.domain.member.exception.MemberException;
 import com.back.domain.member.repository.MemberRepository;
 import com.back.domain.notification.entity.Notification;
 import com.back.domain.notification.enums.NotificationType;
+import com.back.domain.notification.repository.NotificationRepository;
+import com.back.domain.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -25,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -38,6 +41,8 @@ public class ChatService {
     private final SimpMessagingTemplate messagingTemplate;
     private final RedisTemplate<String, Object> redisTemplate;
     private final RedisSubscriber redisSubscriber;
+    private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public ChatRoomResponseDto createOrGetChatRoom(Long member1Id, Long member2Id) {
@@ -46,36 +51,51 @@ public class ChatService {
         Member member2 = memberRepository.findById(member2Id)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found: " + member2Id));
 
-        ChatRoom chatRoom = chatRoomRepository.findByMembers(member1, member2)
-                .orElseGet(() -> {
-                    ChatRoom newRoom = ChatRoom.builder()
-                            .firstMember(member1)
-                            .secondMember(member2)
-                            .build();
-                    return chatRoomRepository.save(newRoom);
-                });
-
-        // 새로 생성된 채팅방인 경우에만 상대방에게 알림
-        if (chatRoom.getCreatedAt() != null &&
-            chatRoom.getCreatedAt().isAfter(LocalDateTime.now().minusMinutes(1))) {
-            // 상대방에게만 채팅방 생성 알림 전송
-            Long opponentId = member1Id.equals(member1.getId()) ? member2Id : member1Id;
-
-            Member opponent = memberRepository.findById(opponentId)
-                    .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
-
-            Notification roomInfo = Notification.builder()
-                    .title("새 채팅방 생성")
-                    .message("새로운 채팅방이 생성되었습니다. 채팅을 시작하세요!")
-                    .member(opponent)
-                    .type(NotificationType.NEW_MESSAGE)
-                    .build();
-            messagingTemplate.convertAndSend("/queue/user/" + opponentId, roomInfo.getMessage());
-
-            log.info("New chat room {} created, notified opponent {}", chatRoom.getId(), opponentId);
+        // 기존 채팅방 찾기
+        Optional<ChatRoom> existingRoom = chatRoomRepository.findByMembers(member1, member2);
+        
+        if (existingRoom.isPresent()) {
+            log.info("Found existing chat room: {}", existingRoom.get().getId());
+            return ChatRoomResponseDto.from(existingRoom.get());
         }
 
-        return ChatRoomResponseDto.from(chatRoom);
+        // 새 채팅방 생성
+        ChatRoom chatRoom = ChatRoom.builder()
+                .firstMember(member1)
+                .secondMember(member2)
+                .build();
+        
+        ChatRoom savedRoom = chatRoomRepository.save(chatRoom);
+        log.info("Created new chat room: {}", savedRoom.getId());
+
+        // 상대방에게 채팅방 생성 알림 전송 (member1이 요청자라고 가정)
+        try {
+            notificationService.sendChatNotification(member2.getId(), member1.getName(),
+                    "새 채팅방이 생성되었습니다");
+            
+            notifyChatRoomCreated(savedRoom);
+            log.info("New chat room {} created, notified member {}", savedRoom.getId(), member2.getId());
+        } catch (Exception e) {
+            log.error("Failed to send notification for new chat room", e);
+            // 알림 실패해도 채팅방 생성은 성공으로 처리
+        }
+
+        return ChatRoomResponseDto.from(savedRoom);
+    }
+
+    private void notifyChatRoomCreated(ChatRoom chatRoom) {
+        // 두 사용자 모두에게 알림 전송
+        messagingTemplate.convertAndSendToUser(
+                String.valueOf(chatRoom.getFirstMember().getId()),
+                "/queue/chat-rooms",
+                ChatRoomResponseDto.from(chatRoom)
+        );
+
+        messagingTemplate.convertAndSendToUser(
+                String.valueOf(chatRoom.getSecondMember().getId()),
+                "/queue/chat-rooms",
+                ChatRoomResponseDto.from(chatRoom)
+        );
     }
 
     public void enterChatRoom(Long roomId, Long userId) {
@@ -94,13 +114,7 @@ public class ChatService {
         }
 
         // 상대방에게 채팅방 입장 알림 보내기
-        Notification notificationMessage = Notification.builder()
-                .title("새 채팅방 입장")
-                .message("새로운 채팅방에 입장하었습니다. 채팅을 시작하세요!")
-                .member(opponent)
-                .type(NotificationType.NEW_MESSAGE)
-                .build();
-        messagingTemplate.convertAndSend("/queue/user/" + opponent.getId(), notificationMessage.getMessage());
+        notificationService.sendMessageToUserEnterChatRoom(opponent);
 
         log.info("User {} entered room {}, notified opponent {}", userId, roomId, opponent.getId());
     }
@@ -186,8 +200,8 @@ public class ChatService {
                 })
                 .toList();
 
-        // 사용자에게 최근 메시지 전송
-        messagingTemplate.convertAndSend("/queue/user/" + member.getId() + "/messages", messageResponses);
+        // 사용자에게 최근 메시지 전송 -> roomId를 사용하여 특정 사용자에게 전송
+        messagingTemplate.convertAndSend("/queue/user/" + roomId + "/messages", messageResponses);
 
         log.info("Sent {} recent messages to user {} for room {}", messageResponses.size(), member.getId(), roomId);
     }
@@ -207,11 +221,21 @@ public class ChatService {
         // DB에서 채팅방 삭제 (Cascade로 메시지도 자동 삭제)
         chatRoomRepository.delete(chatRoom);
 
-        // 양쪽 사용자에게 채팅방 삭제 알림
-        String deleteNotification = "채팅방이 삭제되었습니다.";
-        messagingTemplate.convertAndSend("/queue/user/" + chatRoom.getFirstMember().getId(), deleteNotification);
-        messagingTemplate.convertAndSend("/queue/user/" + chatRoom.getSecondMember().getId(), deleteNotification);
-
+        // 양쪽 사용자에게 채팅방 삭제 알림 전송 (순차적으로)
+        Long firstMemberId = chatRoom.getFirstMember().getId();
+        Long secondMemberId = chatRoom.getSecondMember().getId();
+        
+        // 첫 번째 멤버에게 알림
+        notificationService.sendChatDeleteNotification(firstMemberId, "채팅방이 삭제되었습니다");
+        
+        // 잠시 대기 후 두 번째 멤버에게 알림
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        
+        notificationService.sendChatDeleteNotification(secondMemberId, "채팅방이 삭제되었습니다");
         log.info("Chat room {} deleted, cleaned Redis data and notified users", roomId);
     }
 }

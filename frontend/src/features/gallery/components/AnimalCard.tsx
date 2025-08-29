@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Pet } from '@/shared/types';
-import { formatAnimalAge, formatAnimalGender, formatAnimalSpecies } from '@/shared/utils';
+import { Pet } from '../../../shared/types';
+import { formatAnimalAge, formatAnimalGender, formatAnimalSpecies, getPetStatusDisplayText, getPetStatusColorClass } from '../../../shared/utils';
 
 interface AnimalCardProps {
   pet: Pet;
@@ -26,11 +26,13 @@ export default function AnimalCard({ pet }: AnimalCardProps) {
         )}
         
         {/* 상태 배지 */}
-        <div className="absolute top-2 right-2">
-          <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
-            입양 가능
-          </span>
-        </div>
+        {pet.petStatuses && pet.petStatuses.length > 0 && (
+          <div className="absolute top-2 right-2">
+            <span className={`text-xs px-2 py-1 rounded-full font-medium ${getPetStatusColorClass(pet.petStatuses)}`}>
+              {getPetStatusDisplayText(pet.petStatuses)}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* 정보 */}
@@ -60,20 +62,21 @@ export default function AnimalCard({ pet }: AnimalCardProps) {
 
         {/* 보호소 정보 */}
         <div className="text-xs text-gray-500 mb-4">
-          <p>보호소 ID: {pet.shelterId}</p>
+          {pet.shelterName ? (
+            <p>보호소: {pet.shelterName}</p>
+          ) : (
+            <p>보호소 정보 없음</p>
+          )}
         </div>
 
         {/* 액션 버튼 */}
         <div className="flex gap-2">
           <Link
             href={`/gallery/${pet.id}`}
-            className="flex-1 bg-orange-500 text-white text-center py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium"
+            className="w-full bg-orange-500 text-white text-center py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium"
           >
             상세보기
           </Link>
-          <button className="bg-gray-100 text-gray-700 py-2 px-3 rounded-lg hover:bg-gray-200 transition-colors text-sm">
-            ♥
-          </button>
         </div>
       </div>
     </div>

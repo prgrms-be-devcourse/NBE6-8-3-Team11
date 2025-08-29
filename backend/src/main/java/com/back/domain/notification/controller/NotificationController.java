@@ -2,6 +2,7 @@ package com.back.domain.notification.controller;
 
 
 import com.back.domain.notification.dto.response.NotificationResponseDto;
+import com.back.domain.notification.dto.response.NotificationSimpleResponseDto;
 import com.back.domain.notification.service.NotificationService;
 import com.back.global.common.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,6 +39,12 @@ public class NotificationController {
         return ResponseEntity.ok(ApiResponse.success("알림이 삭제되었습니다.", null));
     }
 
-
+    @DeleteMapping("/all")
+    @Operation(summary = "알림 전체 삭제", description = "사용자의 알림을 전체 삭제합니다")
+    public ResponseEntity<ApiResponse<Void>> deleteNotification(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        notificationService.deleteAllNotification(userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.success("알림이 삭제되었습니다.", null));
+    }
 
 }

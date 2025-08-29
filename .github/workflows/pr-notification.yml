@@ -1,82 +1,46 @@
-name: Fork PR Notification
+name: Fork Slack Notify
 
 on:
-  pull_request_target:
+  pull_request:
     types: [opened, ready_for_review, synchronize, reopened]
     branches:
-      - main
       - develop
+      - main
 
 jobs:
+  # CI가 완료될 때까지 대기
+  wait-for-ci:
+    name: Wait for CI
+    runs-on: ubuntu-latest
+    if: ${{ github.repository == 'prgrms-be-devcourse/NBE6-8-2-Team11' && github.event.pull_request.head.repo.fork == true }}
+    steps:
+      - name: Wait for CI completion
+        run: |
+          echo "Waiting for CI to complete..."
+          sleep 30
+
   fork-notify:
     name: Fork Slack Notify
     runs-on: ubuntu-latest
-    # Fork에서만 실행
-    if: ${{ !github.event.pull_request.draft && github.event.pull_request.head.repo.fork == true }}
+    needs: wait-for-ci
+    # Fork PR이고 CI가 완료된 경우에만 실행
+    if: ${{ success() && github.repository == 'prgrms-be-devcourse/NBE6-8-2-Team11' && github.event.pull_request.head.repo.fork == true }}
     steps:
-      - name: Wait for CI completion and check status
-        run: |
-          echo "CI 완료를 기다리고 상태를 확인하는 중..."
-          
-          # 최대 5분 대기
-          max_wait=300
-          wait_time=0
-          
-          while [ $wait_time -lt $max_wait ]; do
-            sleep 30
-            wait_time=$((wait_time + 30))
-            echo "대기 시간: ${wait_time}초"
-            
-            # 3분 후부터 CI 상태 확인 시작
-            if [ $wait_time -ge 180 ]; then
-              echo "CI 상태 확인 중..."
-              
-              # GitHub CLI로 PR 체크 상태 확인
-              checks=$(gh pr checks ${{ github.event.pull_request.number }} --json conclusion,name 2>/dev/null || echo "[]")
-              
-              # 결과가 있는지 확인
-              if [ "$checks" != "[]" ] && [ "$checks" != "" ]; then
-                # 실패한 체크가 있는지 확인
-                failed_checks=$(echo "$checks" | jq -r '.[] | select(.conclusion == "FAILURE") | .name' 2>/dev/null || echo "")
-                
-                if [ -n "$failed_checks" ]; then
-                  echo "❌ 실패한 CI가 있습니다: $failed_checks"
-                  echo "알림을 보내지 않습니다."
-                  exit 0
-                fi
-                
-                # 모든 필수 CI가 완료되었는지 확인 (성공 또는 스킵)
-                completed_checks=$(echo "$checks" | jq -r '.[] | select(.conclusion == "SUCCESS" or .conclusion == "SKIPPED") | .name' 2>/dev/null || echo "")
-                
-                if echo "$completed_checks" | grep -q "Backend\|Frontend"; then
-                  echo "✅ CI가 성공적으로 완료되었습니다."
-                  break
-                fi
-              fi
-              
-              echo "CI가 아직 진행 중입니다..."
-            fi
-          done
-          
-          echo "CI 상태 확인 완료"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Install GitHub CLI
-        run: |
-          # GitHub CLI가 이미 설치되어 있지만 확인
-          gh --version || (sudo apt-get update && sudo apt-get install -y gh)
-
       - name: Send Fork Slack Notification
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "⚠️ SLACK_WEBHOOK_URL이 설정되지 않았습니다."
+            exit 0
+          fi
+          
           pr_title="${{ github.event.pull_request.title }}"
           pr_url="${{ github.event.pull_request.html_url }}"
           pr_author="${{ github.event.pull_request.user.login }}"
           pr_number="${{ github.event.pull_request.number }}"
           
-          cat << 'EOF' > slack_message.json
+          cat << EOF > slack_message.json
           {
             "blocks": [
               {
@@ -90,7 +54,7 @@ jobs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "*제목*\n```TITLE_PLACEHOLDER```"
+                  "text": "*제목*\n\`\`\`${pr_title}\`\`\`"
                 }
               },
               {
@@ -98,19 +62,19 @@ jobs:
                 "fields": [
                   {
                     "type": "mrkdwn",
-                    "text": "*작성자*\n👤 @AUTHOR_PLACEHOLDER"
+                    "text": "*작성자*\n👤 @${pr_author}"
                   },
                   {
                     "type": "mrkdwn",
-                    "text": "*PR 번호*\n<URL_PLACEHOLDER|#NUMBER_PLACEHOLDER>"
+                    "text": "*PR 번호*\n<${pr_url}|#${pr_number}>"
                   },
                   {
                     "type": "mrkdwn",
-                    "text": "*소스*\n🔀 Fork"
+                    "text": "*타입*\n🔀 Fork PR"
                   },
                   {
                     "type": "mrkdwn",
-                    "text": "*상태*\n✅ CI 완료 후 리뷰 대기"
+                    "text": "*상태*\n✅ 리뷰 대기 중"
                   }
                 ]
               },
@@ -124,7 +88,15 @@ jobs:
                       "text": "리뷰하러 가기 🚀"
                     },
                     "style": "primary",
-                    "url": "URL_PLACEHOLDER"
+                    "url": "${pr_url}"
+                  },
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "변경사항 확인 📝"
+                    },
+                    "url": "${pr_url}/files"
                   }
                 ]
               }
@@ -132,14 +104,8 @@ jobs:
           }
           EOF
           
-          # 플레이스홀더 교체
-          sed -i "s/TITLE_PLACEHOLDER/$pr_title/g" slack_message.json
-          sed -i "s/AUTHOR_PLACEHOLDER/$pr_author/g" slack_message.json
-          sed -i "s/NUMBER_PLACEHOLDER/$pr_number/g" slack_message.json
-          sed -i "s|URL_PLACEHOLDER|$pr_url|g" slack_message.json
-          
           curl -X POST -H 'Content-type: application/json' \
             --data @slack_message.json \
             "$SLACK_WEBHOOK_URL"
           
-          echo "Fork PR 알림 전송 완료!"
+          echo "✅ Fork PR 알림 전송 완료!"

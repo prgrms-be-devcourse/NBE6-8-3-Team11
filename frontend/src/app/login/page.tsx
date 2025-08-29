@@ -1,52 +1,221 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import Header from '../../shared/components/layout/Header';
+import Footer from '../../shared/components/layout/Footer';
+import { memberService } from '../../shared/services/member';
+import { useAuth } from '../../context/AuthContext';
+import { getUserInfoFromToken } from '../../shared/utils/jwt';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // JWT 토큰 디코딩 함수 제거 (AuthContext에서 처리)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+  
+    try {
+      const response = await memberService.login({
+        email: formData.email,
+        password: formData.password,
+      });
+      
+      console.log('로그인 성공:', response);
+
+      // JWT 토큰에서 사용자 정보 추출
+      const userInfoFromToken = getUserInfoFromToken(response.accessToken);
+      
+      // 로그인 응답에서 사용자 정보를 생성
+      const userInfo = {
+        id: response.userId,
+        sub: response.userEmail, // 이메일을 subject로 사용
+        auth: userInfoFromToken?.auth || 'ROLE_USER', // JWT 토큰에서 추출한 권한 정보 사용
+        exp: Date.now() + 24 * 60 * 60 * 1000, // 24시간 후 만료
+        nickname: response.userName,
+        email: response.userEmail,
+      };
+
+      // AuthContext의 login 함수에 사용자 정보 전달
+      login(response.accessToken, response.refreshToken, userInfo);
+      
+      console.log('로그인 상태 업데이트 완료, 홈페이지로 이동합니다.');
+      
+      // 로그인 성공 시 즉시 홈페이지로 이동
+      router.push('/');
+      
+    } catch (error: unknown) {
+      console.log('로그인 에러:', error);
+      
+      // 에러 메시지 처리
+      let errorMessage = '로그인에 실패했습니다. 다시 시도해주세요.';
+      
+      if (error && typeof error === 'object' && 'response' in error) {
+        const errorResponse = error as { response?: { data?: { message?: string } } };
+        if (errorResponse.response?.data?.message) {
+          errorMessage = errorResponse.response.data.message;
+        }
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        const errorObj = error as { message: string };
+        errorMessage = errorObj.message;
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleKakaoLogin = () => {
     // 백엔드의 OAuth2 엔드포인트로 리다이렉트
-    window.location.href = 'http://localhost:8080/oauth2/authorization/kakao';
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+    if (!apiBaseUrl) {
+      console.error('API BASE URL이 설정되지 않았습니다!');
+      alert('환경 설정 오류가 발생했습니다.');
+      return;
+    }
+
+    console.log('API BASE URL:', apiBaseUrl); // 디버깅용
+    window.location.href = `${apiBaseUrl}/oauth2/authorization/kakao`;
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            로그인
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            카카오 계정으로 간편하게 로그인하세요
-          </p>
-        </div>
-        <div className="mt-8 space-y-6">
-          <div>
-            <button
-              onClick={handleKakaoLogin}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
-            >
-              <svg
-                className="w-5 h-5 mr-2"
-                viewBox="0 0 24 24"
-                fill="currentColor"
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50">
+      <Header />
+      
+      <main className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                로그인
+              </h1>
+              <p className="text-gray-600">
+                계정 정보를 입력하거나 카카오로 간편 로그인하세요
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* 이메일 입력 */}
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  이메일
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                  placeholder="이메일을 입력하세요"
+                />
+              </div>
+
+              {/* 비밀번호 입력 */}
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                  비밀번호
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                  placeholder="비밀번호를 입력하세요"
+                />
+              </div>
+
+              {/* 에러 메시지 */}
+              {error && (
+                <div className="text-red-600 text-sm text-center bg-red-50 p-3 rounded-lg">
+                  {error}
+                </div>
+              )}
+
+              {/* 로그인 버튼 */}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-orange-500 text-white py-3 px-4 rounded-lg font-semibold hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <path d="M12 3c5.799 0 10.5 3.664 10.5 8.185 0 4.52-4.701 8.184-10.5 8.184a13.5 13.5 0 0 1-1.727-.11l-4.408 2.883c-.501.265-.678.236-.472-.413l.892-3.678c-2.88-1.46-4.785-3.99-4.785-6.866C1.5 6.665 6.201 3 12 3z"/>
-              </svg>
-              카카오로 로그인
-            </button>
-          </div>
-          <div className="text-center">
-            <button
-              onClick={() => router.push('/')}
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
-              홈으로 돌아가기
-            </button>
+                {isLoading ? '로그인 중...' : '로그인'}
+              </button>
+            </form>
+
+            {/* 구분선 */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">또는</span>
+              </div>
+            </div>
+
+            {/* 카카오 로그인 버튼 */}
+            <div className="text-center">
+              <button
+                onClick={handleKakaoLogin}
+                className="hover:opacity-80 transition-opacity"
+              >
+                <Image
+                  src="/kakao_login_medium_narrow.png"
+                  alt="카카오 로그인"
+                  width={183}
+                  height={45}
+                  className="cursor-pointer"
+                />
+              </button>
+            </div>
+
+            {/* 추가 링크들 */}
+            <div className="mt-6 text-center space-y-2">
+              <div className="text-sm">
+                <a href="#" className="text-orange-600 hover:text-orange-700 font-medium">
+                  아이디 찾기
+                </a>
+                <span className="mx-2 text-gray-400">|</span>
+                <a href="#" className="text-orange-600 hover:text-orange-700 font-medium">
+                  비밀번호 찾기
+                </a>
+              </div>
+              <div className="text-sm text-gray-600">
+                계정이 없으신가요?{' '}
+                <a href="/signup" className="text-orange-600 hover:text-orange-700 font-medium">
+                  회원가입
+                </a>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </main>
+
+      <Footer />
     </div>
   );
 } 

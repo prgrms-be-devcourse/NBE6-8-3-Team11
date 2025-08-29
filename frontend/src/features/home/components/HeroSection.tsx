@@ -1,3 +1,6 @@
+import Link from 'next/link';
+import Image from 'next/image';
+
 export default function HeroSection() {
   return (
     <section className="relative py-20 px-4 sm:px-6 lg:px-8">
@@ -14,12 +17,16 @@ export default function HeroSection() {
               모든 동물이 사랑받는 가정에서 살 수 있도록 도와드립니다.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <button className="bg-orange-500 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-orange-600 transition-all transform hover:scale-105">
-                입양동물 보기
-              </button>
-              <button className="border-2 border-orange-500 text-orange-500 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-orange-500 hover:text-white transition-all">
-                입양신청하기
-              </button>
+              <Link href="/gallery">
+                <button className="bg-orange-500 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-orange-600 transition-all transform hover:scale-105">
+                  보호중인 아이들 보러가기
+                </button>
+              </Link>
+              <Link href="/signup">
+                <button className="bg-orange-500 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-orange-600 transition-all transform hover:scale-105">
+                  회원가입
+                </button>
+              </Link>
             </div>
           </div>
           
@@ -27,25 +34,45 @@ export default function HeroSection() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-4">
                 <div className="bg-white rounded-2xl p-4 shadow-lg transform rotate-3 hover:rotate-0 transition-transform">
-                  <div className="w-full h-48 bg-gradient-to-br from-orange-200 to-yellow-200 rounded-xl flex items-center justify-center">
-                    <span className="text-4xl">🐕</span>
+                  <div className="w-full h-48 bg-gradient-to-br from-orange-200 to-yellow-200 rounded-xl flex items-center justify-center relative">
+                    <Image 
+                      src="https://images.unsplash.com/photo-1615751072497-5f5169febe17?auto=format&fit=crop&crop=face" 
+                      alt="강아지" 
+                      fill
+                      className="object-cover rounded-xl"
+                    />
                   </div>
                 </div>
                 <div className="bg-white rounded-2xl p-4 shadow-lg transform -rotate-2 hover:rotate-0 transition-transform">
-                  <div className="w-full h-32 bg-gradient-to-br from-blue-200 to-purple-200 rounded-xl flex items-center justify-center">
-                    <span className="text-3xl">🐱</span>
+                  <div className="w-full h-32 bg-gradient-to-br from-blue-200 to-purple-200 rounded-xl flex items-center justify-center relative">
+                    <Image 
+                      src="https://images.unsplash.com/photo-1567270671170-fdc10a5bf831?auto=format&fit=crop&crop=face" 
+                      alt="고양이" 
+                      fill
+                      className="object-cover rounded-xl"
+                    />
                   </div>
                 </div>
               </div>
               <div className="space-y-4 pt-8">
                 <div className="bg-white rounded-2xl p-4 shadow-lg transform -rotate-1 hover:rotate-0 transition-transform">
-                  <div className="w-full h-32 bg-gradient-to-br from-green-200 to-teal-200 rounded-xl flex items-center justify-center">
-                    <span className="text-3xl">🐰</span>
+                  <div className="w-full h-32 bg-gradient-to-br from-green-200 to-teal-200 rounded-xl flex items-center justify-center relative">
+                    <Image 
+                      src="https://images.unsplash.com/photo-1695827406639-befb948fb513?auto=format&fit=crop&crop=face" 
+                      alt="토끼" 
+                      fill
+                      className="object-cover rounded-xl"
+                    />
                   </div>
                 </div>
                 <div className="bg-white rounded-2xl p-4 shadow-lg transform rotate-2 hover:rotate-0 transition-transform">
-                  <div className="w-full h-48 bg-gradient-to-br from-pink-200 to-red-200 rounded-xl flex items-center justify-center">
-                    <span className="text-4xl">🐦</span>
+                  <div className="w-full h-48 bg-gradient-to-br from-pink-200 to-red-200 rounded-xl flex items-center justify-center relative">
+                    <Image 
+                      src="https://images.unsplash.com/photo-1667149047504-778bea76cf50?auto=format&fit=crop&crop=face" 
+                      alt="새" 
+                      fill
+                      className="object-cover rounded-xl"
+                    />
                   </div>
                 </div>
               </div>

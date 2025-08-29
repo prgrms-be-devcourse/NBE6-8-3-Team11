@@ -1,15 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Pet } from '@/shared/types';
-import { MOCK_PETS } from '@/shared/constants';
-import Header from '@/shared/components/layout/Header';
-import Footer from '@/shared/components/layout/Footer';
-import AnimalGrid from '@/features/gallery/components/AnimalGrid';
-import AnimalFilter from '@/features/gallery/components/AnimalFilter';
-import AnimalSearch from '@/features/gallery/components/AnimalSearch';
-import LoadingSpinner from '@/shared/components/common/LoadingSpinner';
-import ErrorBoundary from '@/shared/components/common/ErrorBoundary';
+import { Pet, PetStatusType } from '../../shared/types';
+import { petService } from '../../shared/services/petService';
+import Header from '../../shared/components/layout/Header';
+import Footer from '../../shared/components/layout/Footer';
+import AnimalGrid from '../../features/gallery/components/AnimalGrid';
+import AnimalFilter from '../../features/gallery/components/AnimalFilter';
+import AnimalSearch from '../../features/gallery/components/AnimalSearch';
+import LoadingSpinner from '../../shared/components/common/LoadingSpinner';
+import ErrorBoundary from '../../shared/components/common/ErrorBoundary';
 
 export default function GalleryPage() {
   const [pets, setPets] = useState<Pet[]>([]);
@@ -20,21 +20,21 @@ export default function GalleryPage() {
     species: '',
     gender: '',
     age: '',
+    status: '',
   });
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Mock 데이터 로드 (API 서버 대신)
+  // API에서 동물 데이터 로드
   useEffect(() => {
     const loadPets = async () => {
       try {
         setLoading(true);
-        // API 호출 대신 Mock 데이터 사용
-        await new Promise(resolve => setTimeout(resolve, 500)); // 로딩 시뮬레이션
-        setPets(MOCK_PETS);
-        setFilteredPets(MOCK_PETS);
+        const petsData = await petService.getPets();
+        setPets(petsData);
+        setFilteredPets(petsData);
       } catch (err) {
+        console.error('API Error:', err);
         setError('동물 정보를 불러오는데 실패했습니다.');
-        console.error('Failed to load pets:', err);
       } finally {
         setLoading(false);
       }
@@ -45,6 +45,8 @@ export default function GalleryPage() {
 
   // 필터링 및 검색 적용
   useEffect(() => {
+    if (!pets || pets.length === 0) return;
+    
     let filtered = [...pets];
 
     // 검색 필터
@@ -71,6 +73,12 @@ export default function GalleryPage() {
         );
       }
     }
+    // 상태 필터 추가
+    if (filters.status) {
+      filtered = filtered.filter(pet => 
+        pet.petStatuses && pet.petStatuses.includes(filters.status as PetStatusType)
+      );
+    }
 
     setFilteredPets(filtered);
   }, [pets, filters, searchQuery]);
@@ -88,6 +96,7 @@ export default function GalleryPage() {
       species: '',
       gender: '',
       age: '',
+      status: '',
     });
     setSearchQuery('');
   };
@@ -127,11 +136,11 @@ export default function GalleryPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center">
               <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                입양 가능한 동물들
+                보호중인 동물들
               </h1>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
                 사랑스러운 반려동물들이 새로운 가족을 기다리고 있습니다. 
-                마음에 드는 동물을 찾아 입양해보세요.
+                마음에 드는 동물을 찾아 입양/돌봄을 신청해보세요.
               </p>
             </div>
           </div>
@@ -156,7 +165,7 @@ export default function GalleryPage() {
                   필터 초기화
                 </button>
                 <span className="text-sm text-gray-500">
-                  {filteredPets.length}마리 발견
+                  {filteredPets?.length || 0}마리 발견
                 </span>
               </div>
             </div>
@@ -172,7 +181,7 @@ export default function GalleryPage() {
 
         {/* 동물 그리드 */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-          {filteredPets.length === 0 ? (
+          {!filteredPets || filteredPets.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-gray-400 text-6xl mb-4">🐾</div>
               <h3 className="text-xl font-semibold text-gray-600 mb-2">
@@ -197,4 +206,4 @@ export default function GalleryPage() {
       </div>
     </ErrorBoundary>
   );
-} 
+}

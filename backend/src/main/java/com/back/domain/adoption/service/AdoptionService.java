@@ -8,18 +8,21 @@ import com.back.domain.adoption.dto.response.ApplicationSimpleListResponseDto;
 import com.back.domain.adoption.entity.Adoption;
 import com.back.domain.adoption.enums.RequestStatus;
 import com.back.domain.adoption.repository.AdoptionRepository;
+import com.back.domain.applicant.dto.request.ApplicantRequestDto;
 import com.back.domain.care.entity.Care;
 import com.back.domain.care.repository.CareRepository;
 import com.back.domain.member.entity.Member;
 import com.back.domain.member.exception.MemberErrorCode;
 import com.back.domain.member.exception.MemberException;
 import com.back.domain.member.repository.MemberRepository;
+import com.back.domain.notification.service.NotificationService;
 import com.back.domain.pet.entity.Pet;
 import com.back.domain.pet.entity.PetStatus;
 import com.back.domain.pet.enums.PetStatusType;
 import com.back.domain.pet.exception.PetErrorCode;
 import com.back.domain.pet.exception.PetException;
 import com.back.domain.pet.repository.PetRepository;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,12 +32,14 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AdoptionService {
 
     private final MemberRepository memberRepository;
     private final PetRepository petRepository;
     private final AdoptionRepository adoptionRepository;
     private final CareRepository careRepository;
+    private final NotificationService notificationService;
 
     public AdoptionResponseDto applyAdoption(AdoptionRequestDto adoptionRequestDto, String memberEmail) {
         Member member = getMemberByEmail(memberEmail);
@@ -42,24 +47,33 @@ public class AdoptionService {
         Pet pet = petRepository.findById(adoptionRequestDto.petId())
                 .orElseThrow(() -> new PetException(PetErrorCode.PET_NOT_FOUND));
 
-        boolean isAvailableForAdoption = pet.getStatuses().stream()
-                .anyMatch(status -> status.getStatus().equals(PetStatusType.AVAILABLE_FOR_ADOPTION));
+        boolean isAvailableForAdoption = pet.getPetStatuses().stream()
+                .anyMatch(status -> status.getStatus().equals(PetStatusType.AVAILABLE_FOR_ADOPTION) ||
+                        status.getStatus().equals(PetStatusType.AVAILABLE_BOTH));
 
         if (!isAvailableForAdoption) {
             throw new PetException(PetErrorCode.PET_NOT_AVAILABLE_FOR_CARE);
         }
 
         Adoption adoption = Adoption.builder()
+                .applicant(ApplicantRequestDto.of(adoptionRequestDto.applicantInfo()))
                 .member(member)
                 .pet(pet)
                 .title(adoptionRequestDto.title())
+                .anotherPets(adoptionRequestDto.anotherPets())
+                .experience(adoptionRequestDto.experience())
                 .message(adoptionRequestDto.message())
                 .status(RequestStatus.PENDING)
                 .build();
+        adoptionRepository.save(adoption);
+        notificationService.sendAdoptionRequestNotification(member.getId(), "입양을 신청하였습니다.", member.getName());
+
+        notificationService.sendAdoptionRequestNotification(pet.getMember().getId(), "입양 신청이 도착하였습니다.", member.getName());
 
         return AdoptionResponseDto.from(adoption);
     }
 
+    @Transactional(readOnly = true)
     public List<ApplicationSimpleListResponseDto> getMemberApplications(String memberEmail) {
         Member member = getMemberByEmail(memberEmail);
 
@@ -81,6 +95,7 @@ public class AdoptionService {
         return applications;
     }
 
+    @Transactional(readOnly = true)
     public ApplicationResponseDto getApplicationDetails(Long typeId, String type, String memberEmail) {
         Member member = getMemberByEmail(memberEmail);
         Object entity = getApplicationEntity(type, typeId, member);
@@ -119,6 +134,7 @@ public class AdoptionService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<ApplicationSimpleListResponseDto> getReceivedApplications(String memberEmail) {
         Member member = getMemberByEmail(memberEmail);
 
@@ -140,10 +156,11 @@ public class AdoptionService {
         return applications;
     }
 
+    @Transactional(readOnly = true)
     public ApplicationResponseDto getReceivedApplicationDetails(
             Long typeId, String type, String memberEmail) {
         Member member = getMemberByEmail(memberEmail);
-        Object entity = getApplicationEntity(type, typeId, member);
+        Object entity = getReceivedApplicationEntity(type, typeId, member);
 
         if (entity instanceof Adoption adoption) {
             return ApplicationResponseDto.fromAdoption(adoption);
@@ -155,17 +172,35 @@ public class AdoptionService {
 
     public void updateReceivedApplicationStatus(AdoptionCareStatusUpdateRequestDto requestDto, String memberEmail) {
         Member member = getMemberByEmail(memberEmail);
-        Object entity = getApplicationEntity(requestDto, member);
+        Object entity = getReceivedApplicationEntity(requestDto.type(), requestDto.id(), member);
+
+        Pet pet = petRepository.findById(requestDto.id())
+                .orElseThrow(() -> new PetException(PetErrorCode.PET_NOT_FOUND));
 
         RequestStatus newStatus = RequestStatus.valueOf(requestDto.status());
 
         if (newStatus == RequestStatus.REJECTED) {
             updateApplicationStatus(entity, newStatus);
+            notificationService.sendResponseNotification(member.getId(), "신청을 거절되었습니다.", requestDto.type(), false);
+            notificationService.sendResponseNotification(pet.getMember().getId(), "신청이 거절되었습니다.", requestDto.type(), false);
             return;
         }
 
         // ACCEPTED인 경우 PetStatus도 함께 업데이트
         updateApplicationStatusWithPetStatus(entity, newStatus);
+        notificationService.sendResponseNotification(member.getId(), "신청을 승인하셨습니다.", requestDto.type(), true);
+        notificationService.sendResponseNotification(pet.getMember().getId(), "신청이 승인되셨습니다.", requestDto.type(), true);
+    }
+
+    public void deleteReceivedSingleHistory(Long typeId, String type, String memberEmail) {
+        Member member = getMemberByEmail(memberEmail);
+        Object entity = getReceivedApplicationEntity(type, typeId, member);
+
+        if (entity instanceof Adoption adoption) {
+            adoptionRepository.delete(adoption);
+        } else if (entity instanceof Care care) {
+            careRepository.delete(care);
+        }
     }
 
     public void deleteOwnerAllHistory(String memberEmail) {
@@ -183,12 +218,13 @@ public class AdoptionService {
         }
     }
 
-
+    @Transactional(readOnly = true)
     private Member getMemberByEmail(String memberEmail) {
         return memberRepository.findByEmail(memberEmail)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 
+    @Transactional(readOnly = true)
     private Object getApplicationEntity(String type, Long id, Member member) {
         if (type.equals("ADOPTION")) {
             return adoptionRepository.findByIdAndMember(id, member)
@@ -201,8 +237,17 @@ public class AdoptionService {
         }
     }
 
-    private Object getApplicationEntity(AdoptionCareStatusUpdateRequestDto requestDto, Member member) {
-        return getApplicationEntity(requestDto.type(), requestDto.id(), member);
+    @Transactional(readOnly = true)
+    private Object getReceivedApplicationEntity(String type, Long id, Member member) {
+        if (type.equals("ADOPTION")) {
+            return adoptionRepository.findByIdAndPet_Member(id, member)
+                    .orElseThrow(() -> new PetException(PetErrorCode.PET_NOT_FOUND));
+        } else if (type.equals("CARE")) {
+            return careRepository.findByIdAndPet_Member(id, member)
+                    .orElseThrow(() -> new PetException(PetErrorCode.PET_NOT_FOUND));
+        } else {
+            throw new IllegalArgumentException("Invalid application type: " + type);
+        }
     }
 
     private void updateApplicationStatus(Object entity, RequestStatus status) {

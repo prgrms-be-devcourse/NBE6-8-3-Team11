@@ -43,12 +43,24 @@ public class Member implements UserDetails {
     @Column(name = "member_name", nullable = false)
     private String name;
 
-    @Column(name = "member_phone", nullable = false, unique = true)
+    @Column(name = "member_phone")
     private String phone;
+
+
+    //리프레시 토큰 db에 저장
+    @Column(name = "refresh_token")
+    private String refreshToken;
 
     @Column(name = "member_role", nullable = false)
     @Enumerated(EnumType.STRING)
     private UserRole role;
+
+    @Column(name = "member_address")
+    private String address;
+
+    @Lob // 자기소개
+    @Column(name = "member_bio")
+    private String bio;
 
     @CreatedDate
     private LocalDateTime createdAt;
@@ -111,13 +123,19 @@ public class Member implements UserDetails {
     }
 
     //비지니스 로직
-    public void updateInfo(String name, String phone) {
+    public void updateInfo(String name, String phone,String address, String bio) {
         this.name = name;
         this.phone = phone;
+        this.address = address;
+        this.bio = bio;
     }
 
     public void updatePassword(String newPassword) {
         this.password = newPassword;
+    }
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
 }
