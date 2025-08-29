@@ -26,22 +26,44 @@ repositories {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    //소셜 로그인을 위한 oauth2추가
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("com.h2database:h2")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    testImplementation("org.springframework.security:spring-security-test")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
     //mySQL connector for JPA
     runtimeOnly("com.mysql:mysql-connector-j")
+    // PostgreSQL connector for Railway (버전 명시)
+    implementation("org.postgresql:postgresql:42.7.2")
+    // Redis - 환경별 조건부 활성화
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
     // JWT dependencies
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
     // Spring doc
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0")
+    // Actuator for health checks and monitoring
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+
+    //lombok 의존성 추가
+    testCompileOnly ("org.projectlombok:lombok") // 테스트 의존성 추가
+    testAnnotationProcessor ("org.projectlombok:lombok") // 테스트 의존성 추가
+
+    // WebSocket
+    implementation ("org.springframework.boot:spring-boot-starter-websocket")
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks.withType<JavaCompile> {
+    options.compilerArgs.add("-parameters")
 }

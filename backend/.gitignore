@@ -37,3 +37,10 @@ out/
 .vscode/
 
 .env
+
+.DS_Store
+
+
+###custom###
+db_dev.mv.db
+

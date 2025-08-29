@@ -1,8 +1,8 @@
 spring:
+  profiles:
+    active: temp
   application:
     name: springboot-jpa
-  profiles:
-    active: dev
   config:
     import: optional:file:.env
   jpa:
@@ -28,6 +28,23 @@ spring:
       password: ""
       timeout: 6000ms
 
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: a55fbac2b1ec1017835ea67b2a584ad5
+            scope: profile_nickname, profile_image, account_email
+            client-name: Kakao
+            authorization-grant-type: authorization_code
+            redirect-uri: ${OAUTH2_REDIRECT_URI:http://localhost:8080/login/oauth2/code/kakao}
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
 springdoc:
   default-produces-media-type: application/json;charset=UTF-8
 
@@ -41,7 +58,7 @@ logging:
 
 jwt:
   secret: ${JWT_SECRET:3f1e2a0e-8e8f-4c0a-9d3f-b3fae09e6d5a}
-  access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:PT15M}
+  access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:PT2H}
   refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:PT168H}
 
 cookie:
@@ -49,3 +66,5 @@ cookie:
 
 server:
   port: 8080
+
+
