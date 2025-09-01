@@ -63,6 +63,10 @@ dependencies {
 
     // WebSocket
     implementation ("org.springframework.boot:spring-boot-starter-websocket")
+
+
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
 }
 
 tasks.withType<Test> {

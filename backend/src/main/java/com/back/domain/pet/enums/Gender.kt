@@ -1,6 +1,6 @@
-package com.back.domain.pet.enums;
+package com.back.domain.pet.enums
 
-public enum Gender {
+enum class Gender {
     MALE, FEMALE, UNKNOWN,
     NEUTERED_MALE, NEUTERED_FEMALE
 }
