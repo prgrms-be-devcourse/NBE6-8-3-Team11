@@ -48,9 +48,6 @@ class Notification private constructor(
     @CreatedDate
     val createdAt: LocalDateTime? = null
 
-    fun setMember(firstMember: Member) {
-        member = firstMember
-    }
 
     fun markAsRead() {
         isRead = !isRead

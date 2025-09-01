@@ -66,7 +66,9 @@ class AdoptionService(
         adoptionRepository.save(adoption)
         notificationService.sendAdoptionRequestNotification(member.id, "입양을 신청하였습니다.", member.name)
 
-        notificationService.sendAdoptionRequestNotification(pet.member.id, "입양 신청이 도착하였습니다.", member.name)
+        pet.member?.id?.let { memberId ->
+            notificationService.sendAdoptionRequestNotification(memberId, "입양 신청이 도착하였습니다.", member.name)
+        }
 
         return AdoptionResponseDto.from(adoption)!!
     }
@@ -163,14 +165,18 @@ class AdoptionService(
         if (newStatus == RequestStatus.REJECTED) {
             updateApplicationStatus(entity, newStatus)
             notificationService.sendResponseNotification(member.id, "신청을 거절되었습니다.", requestDto.type, false)
-            notificationService.sendResponseNotification(pet.member.id, "신청이 거절되었습니다.", requestDto.type, false)
+            pet.member?.id?.let { memberId ->
+                notificationService.sendResponseNotification(memberId, "신청이 거절되었습니다.", requestDto.type, false)
+            }
             return
         }
 
         // ACCEPTED인 경우 PetStatus도 함께 업데이트
         updateApplicationStatusWithPetStatus(entity, newStatus)
         notificationService.sendResponseNotification(member.id, "신청을 승인하셨습니다.", requestDto.type, true)
-        notificationService.sendResponseNotification(pet.member.id, "신청이 승인되셨습니다.", requestDto.type, true)
+        pet.member?.id?.let { memberId ->
+            notificationService.sendResponseNotification(memberId, "신청이 승인되셨습니다.", requestDto.type, true)
+        }
     }
 
     fun deleteReceivedSingleHistory(typeId: Long, type: String, memberEmail: String) {

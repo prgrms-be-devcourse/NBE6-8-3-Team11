@@ -64,11 +64,13 @@ class CareService(
 
         notificationService.sendCareRequestNotification(member.id, "동물 돌봄 신청이 접수되었습니다", member.name)
 
-        notificationService.sendCareRequestNotification(
-            pet.member.id,
-            "동물 돌봄 신청이 도착하였습니다",
-            member.name
-        )
+        pet.member?.id?.let { memberId ->
+            notificationService.sendCareRequestNotification(
+                memberId,
+                "동물 돌봄 신청이 도착하였습니다",
+                member.name
+            )
+        }
 
         return CareResponseDto.from(care)
     }
