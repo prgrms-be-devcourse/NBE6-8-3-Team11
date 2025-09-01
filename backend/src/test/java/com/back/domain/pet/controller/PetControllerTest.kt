@@ -4,14 +4,11 @@ import com.back.domain.member.entity.Member
 import com.back.domain.member.enums.UserRole
 import com.back.domain.member.repository.MemberRepository
 import com.back.domain.pet.dto.request.PetCreateRequestDto
-import com.back.domain.pet.dto.request.PetUpdateRequestDto
 import com.back.domain.pet.enums.Gender
 import com.back.domain.pet.repository.PetRepository
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.hamcrest.Matchers.containsInAnyOrder
-import org.hamcrest.Matchers.greaterThan
 import org.hamcrest.Matchers.hasSize
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -22,8 +19,9 @@ import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.transaction.annotation.Transactional
 
 @ActiveProfiles("test")
@@ -37,7 +35,7 @@ class PetControllerTest @Autowired constructor(
     val memberRepository: MemberRepository
 ) {
 
-    lateinit var testMember: Member
+    lateinit var testMember:  Member
     lateinit var otherMember: Member
 
     @BeforeEach
@@ -48,7 +46,7 @@ class PetControllerTest @Autowired constructor(
         testMember = Member(
             email = "testuser@example.com",
             name = "테스트 유저",
-            password = "encoded-password",
+            _password = "encoded-password",
             phone = "010-1234-5678",
             role = UserRole.USER
         )
@@ -57,7 +55,7 @@ class PetControllerTest @Autowired constructor(
         otherMember = Member(
             email = "otheruser@example.com",
             name = "다른 유저",
-            password = "encoded-password",
+            _password = "encoded-password",
             phone = "010-9876-5432",
             role = UserRole.USER
         )

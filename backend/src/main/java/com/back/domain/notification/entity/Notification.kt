@@ -16,22 +16,22 @@ class Notification private constructor(
     @field:Enumerated(EnumType.STRING)
     @field:Column(name = "notification_type", nullable = false)
     var type: NotificationType,
-    
+
     @field:Column(name = "notification_title", nullable = false)
     var title: String,
-    
+
     @field:Column(name = "notification_message", nullable = false)
     @field:Lob
     var message: String,
-    
+
     @field:ManyToOne(fetch = FetchType.LAZY)
     @field:JoinColumn(name = "member_id", nullable = false)
     var member: Member,
-    
+
     @field:ManyToOne(fetch = FetchType.LAZY)
     @field:JoinColumn(name = "adoption_id")
     var adoption: Adoption?,
-    
+
     @field:ManyToOne(fetch = FetchType.LAZY)
     @field:JoinColumn(name = "care_id")
     var care: Care?
