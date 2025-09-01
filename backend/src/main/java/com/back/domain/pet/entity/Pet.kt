@@ -44,10 +44,11 @@ class Pet protected constructor(
     @JoinColumn(name = "shelter_id", nullable = true)
     var shelter: Shelter? = null,
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    var member: Member? = null
 ) {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    lateinit var member: Member
+
     @CreatedDate
     @Column(updatable = false)
     var createdAt: LocalDateTime? = null
@@ -64,12 +65,12 @@ class Pet protected constructor(
 
 
     fun updatePet(dto: PetUpdateRequestDto) {
-        this.name = dto.name
-        this.species = dto.species
-        this.age = dto.age
-        this.gender = dto.gender
-        this.description = dto.description
-        this.imageUrl = dto.imageUrl
+        dto.name?.let { this.name = it }
+        dto.species?.let { this.species = it }
+        dto.age?.let { this.age = it }
+        dto.gender?.let { this.gender = it }
+        dto.description?.let { this.description = it }
+        dto.imageUrl?.let { this.imageUrl = it }
     }
     companion object {
         fun create(
@@ -80,7 +81,7 @@ class Pet protected constructor(
             description: String? = null,
             imageUrl: String? = null,
             shelter: Shelter? = null,
-            member: Member? = null,
+            member: Member,
             statuses: List<PetStatus> = emptyList()
         ): Pet {
             val pet = Pet(
@@ -91,8 +92,8 @@ class Pet protected constructor(
                 description = description,
                 imageUrl = imageUrl,
                 shelter = shelter,
-                member = member
             )
+            pet.member = member
             pet.petStatuses = statuses.toMutableList()
             return pet
         }
