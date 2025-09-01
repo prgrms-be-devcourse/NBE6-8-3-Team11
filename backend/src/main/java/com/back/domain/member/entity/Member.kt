@@ -74,6 +74,7 @@ class Member(
     override fun getAuthorities(): Collection<GrantedAuthority> {
         return listOf(SimpleGrantedAuthority("ROLE_" + role.name))
     }
+
     override fun getPassword(): String = this._password
     override fun getUsername(): String = this._email
 
