@@ -46,18 +46,18 @@ class PetControllerTest @Autowired constructor(
         memberRepository.deleteAll()
 
         testMember = Member(
-            email = "testuser@example.com",
+            _email = "testuser@example.com",
             name = "테스트 유저",
-            password = "encoded-password",
+            _password = "encoded-password",
             phone = "010-1234-5678",
             role = UserRole.USER
         )
         memberRepository.save(testMember)
 
         otherMember = Member(
-            email = "otheruser@example.com",
+            _email = "otheruser@example.com",
             name = "다른 유저",
-            password = "encoded-password",
+            _password = "encoded-password",
             phone = "010-9876-5432",
             role = UserRole.USER
         )
