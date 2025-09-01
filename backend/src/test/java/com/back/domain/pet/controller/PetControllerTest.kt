@@ -47,7 +47,7 @@ class PetControllerTest @Autowired constructor(
         memberRepository.deleteAll()
 
         testMember = Member(
-            email = "testuser@example.com",
+            _email = "testuser@example.com",
             name = "테스트 유저",
             _password = "encoded-password",
             phone = "010-1234-5678",
@@ -56,7 +56,7 @@ class PetControllerTest @Autowired constructor(
         memberRepository.save(testMember)
 
         otherMember = Member(
-            email = "otheruser@example.com",
+            _email = "otheruser@example.com",
             name = "다른 유저",
             _password = "encoded-password",
             phone = "010-9876-5432",
