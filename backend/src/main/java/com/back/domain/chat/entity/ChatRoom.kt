@@ -25,7 +25,9 @@ class ChatRoom private constructor(
         private set
 
     @CreatedDate
-    val createdAt: LocalDateTime? = null
+    @Column(updatable = false)
+    var createdAt: LocalDateTime? = null
+        private set
 
     @OneToMany(mappedBy = "chatRoom", cascade = [CascadeType.ALL], orphanRemoval = true)
     val messages: MutableList<ChatMessage> = mutableListOf()
