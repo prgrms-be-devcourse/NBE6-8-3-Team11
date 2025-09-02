@@ -1,5 +1,8 @@
 plugins {
     java
+    kotlin("jvm") version "1.9.25"
+    kotlin("plugin.spring") version "1.9.25"
+    kotlin("plugin.jpa") version "1.9.25"
     id("org.springframework.boot") version "3.5.3"
     id("io.spring.dependency-management") version "1.1.7"
 }
@@ -28,6 +31,12 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     //소셜 로그인을 위한 oauth2추가
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+    
+    // Kotlin 지원 의존성 추가
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("com.h2database:h2")
@@ -39,7 +48,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     //mySQL connector for JPA
     runtimeOnly("com.mysql:mysql-connector-j")
-    // PostgreSQL connector for Railway (버전 명시)
+    // PostgreSQL connector (버전 명시)
     implementation("org.postgresql:postgresql:42.7.2")
     // Redis - 환경별 조건부 활성화
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
@@ -66,4 +75,21 @@ tasks.withType<Test> {
 
 tasks.withType<JavaCompile> {
     options.compilerArgs.add("-parameters")
+}
+
+// Kotlin 컴파일 설정 추가
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
+    }
+}
+
+// Java와 Kotlin 동시 컴파일 지원
+sourceSets {
+    main {
+        java.srcDirs("src/main/java", "src/main/kotlin")
+    }
+    test {
+        java.srcDirs("src/test/java", "src/test/kotlin")
+    }
 }
