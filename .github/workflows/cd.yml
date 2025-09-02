@@ -1,4 +1,4 @@
-name: CD - Deploy to Fly.io (Optimized)
+name: CD - Deploy to Fly.io (Speed Optimized)
 
 on:
   push:
@@ -22,57 +22,38 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      # Gradle 캐싱 추가 (속도 개선의 핵심)
+      # 간단한 Gradle 캐싱만 적용
       - name: Cache Gradle packages
         uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-            backend/.gradle
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-        with:
-          # Gradle 캐시 활성화
-          cache-read-only: false
 
       - name: Grant execute permission to gradlew
         working-directory: ./backend
         run: chmod +x ./gradlew
 
-      # 최적화된 빌드 명령어
-      - name: Build with Gradle (Optimized)
+      # 기본 빌드 (복잡한 옵션 제거)
+      - name: Build with Gradle
         working-directory: ./backend
-        run: ./gradlew clean build -x test --no-daemon --parallel --build-cache --configuration-cache
-        env:
-          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx2g -Dorg.gradle.parallel=true -Dorg.gradle.caching=true"
+        run: ./gradlew clean build -x test --no-daemon --parallel
 
       - name: Setup Fly.io CLI
         uses: superfly/flyctl-actions/setup-flyctl@master
 
-      # 최적화된 Fly.io 배포
-      - name: Deploy to Fly.io (Optimized)
+      # 기본 배포 (복잡한 옵션 제거)
+      - name: Deploy to Fly.io
         working-directory: ./backend
-        run: |
-          flyctl deploy \
-            --remote-only \
-            --build-arg BUILDKIT_INLINE_CACHE=1 \
-            --strategy rolling \
-            --app nbe6-8-3-team11
+        run: flyctl deploy --remote-only --app nbe6-8-3-team11
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
-      # 배포 후 즉시 헬스체크
-      - name: Health Check
-        run: |
-          echo "⏱️ 헬스체크 대기 중..."
-          sleep 30
-          curl -f https://nbe6-8-3-team11.fly.dev/health || echo "⚠️ 헬스체크 실패"
-          echo "✅ 헬스체크 완료"
 
   notify-slack:
     name: Notify Deployment Result
