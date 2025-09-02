@@ -49,7 +49,7 @@ class PetControllerTest @Autowired constructor(
         testMember = Member(
             email = "testuser@example.com",
             name = "테스트 유저",
-            _password = "encoded-password",
+            password = "encoded-password",
             phone = "010-1234-5678",
             role = UserRole.USER
         )
@@ -58,7 +58,7 @@ class PetControllerTest @Autowired constructor(
         otherMember = Member(
             email = "otheruser@example.com",
             name = "다른 유저",
-            _password = "encoded-password",
+            password = "encoded-password",
             phone = "010-9876-5432",
             role = UserRole.USER
         )
