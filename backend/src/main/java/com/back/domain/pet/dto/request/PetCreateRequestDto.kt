@@ -7,16 +7,17 @@ import jakarta.validation.constraints.NotNull
 
 data class PetCreateRequestDto(
     @field:NotBlank(message = "이름은 필수입니다.")
-    val name: String,
+    val name: String = "",
 
     @field:NotBlank(message = "품종은 필수입니다.")
-    val species: String,
+    val species: String = "",
 
     @field:Min(value = 0, message = "나이는 0 이상이어야 합니다.")
-    val age: Int,
+    val age: Int = 0,
 
     @field:NotNull(message = "성별은 필수입니다.")
-    val gender: Gender,
+    val gender: Gender = Gender.UNKNOWN,
+
 
     val description: String? = null,
     val imageUrl: String? = null,
