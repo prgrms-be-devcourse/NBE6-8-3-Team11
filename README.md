@@ -2,7 +2,7 @@
 
 > 유기동물과 입양 희망자를 연결하는 종합적인 반려동물 입양 매칭 서비스
 
-[![배포 상태](https://img.shields.io/badge/배포-Live-brightgreen)](https://nbe-6-8-2-team11.vercel.app)
+[![배포 상태](https://img.shields.io/badge/배포-Live-brightgreen)](https://nbe-6-8-3-team11.vercel.app)
 [![백엔드 API](https://img.shields.io/badge/API-Running-blue)](https://nbe6-8-3-team11.fly.dev)
 [![라이센스](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -131,8 +131,8 @@ frontend/src/
 #### 1. 저장소 클론 및 기본 설정
 ```bash
 # 저장소 클론
-git clone https://github.com/prgrms-be-devcourse/NBE6-8-2-Team11.git
-cd NBE6-8-2-Team11
+git clone https://github.com/prgrms-be-devcourse/NBE6-8-3-Team11.git
+cd NBE6-8-3-Team11
 
 # 개발 브랜치로 전환
 git checkout develop
@@ -216,7 +216,7 @@ NEXT_TELEMETRY_DISABLED=1
 ## 🌐 배포 및 운영
 
 ### 📡 배포 환경
-- **🌍 프론트엔드**: https://nbe-6-8-2-team11.vercel.app
+- **🌍 프론트엔드**: https://nbe-6-8-3-team11.vercel.app
 - **⚡ 백엔드**: https://nbe6-8-3-team11.fly.dev
 - **📊 API 문서**: https://nbe6-8-3-team11.fly.dev/swagger-ui.html
 - **💓 헬스체크**: https://nbe6-8-3-team11.fly.dev/actuator/health
