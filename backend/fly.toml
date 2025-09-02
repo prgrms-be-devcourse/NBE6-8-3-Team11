@@ -1,14 +1,9 @@
-# fly.toml app configuration file for nbe6-8-3-team11
-# Optimized for faster deployment and better performance
-
+# 빠른 배포를 위한 단순화된 설정
 app = 'nbe6-8-3-team11'
 primary_region = 'nrt'
 
 [build]
   dockerfile = "Dockerfile"
-  # Enable build cache for faster rebuilds
-  [build.args]
-    BUILDKIT_INLINE_CACHE = "1"
 
 [http_service]
   internal_port = 8080
@@ -17,11 +12,6 @@ primary_region = 'nrt'
   auto_start_machines = true
   min_machines_running = 0
   processes = ['app']
-  # Faster connection handling
-  [http_service.concurrency]
-    type = "requests"
-    hard_limit = 25
-    soft_limit = 20
 
 [[vm]]
   memory = '1gb'
@@ -31,8 +21,6 @@ primary_region = 'nrt'
 [env]
   SPRING_PROFILES_ACTIVE = "fly"
   PORT = "8080"
-  # JVM optimizations
-  JAVA_OPTS = "-server -XX:+UseContainerSupport -XX:+UseG1GC -XX:MaxRAMPercentage=75.0"
 
 [checks]
   [checks.health]
@@ -42,9 +30,4 @@ primary_region = 'nrt'
     path = "/actuator/health"
     timeout = "10s"
     interval = "30s"  
-    grace_period = "30s"
-
-# Deploy settings for faster deployments
-[deploy]
-  strategy = "rolling"
-  max_unavailable = 0.5
+    grace_period = "15s"
