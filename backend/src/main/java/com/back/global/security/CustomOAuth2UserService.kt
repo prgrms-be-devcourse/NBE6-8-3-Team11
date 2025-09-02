@@ -36,9 +36,8 @@ class CustomOAuth2UserService(
             val newMember = Member(
                 email = email,
                 password = "OAUTH2_USER_PASSWORD",
-
                 name = nickname ?: "사용자",
-                phone = "N/A",
+                phone = null, // N/A 대신 null로 설정
                 role = UserRole.USER
             )
             memberRepository.save(newMember)

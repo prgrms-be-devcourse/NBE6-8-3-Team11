@@ -24,41 +24,48 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     const validateTokenOnLoad = async () => {
-      const token = localStorage.getItem('accessToken');
-      const storedUserInfo = localStorage.getItem('userInfo');
-
-    if (token && storedUserInfo) {
       try {
-        // 토큰에서 사용자 정보 추출
-        const parsedUserInfo = JSON.parse(storedUserInfo) as UserInfo;
-        const userId = parsedUserInfo.id;
+        const token = localStorage.getItem('accessToken');
+        const storedUserInfo = localStorage.getItem('userInfo');
 
-        if (!userId) {
-          throw new Error('User ID not found in stored info.');
-        }
-        const user = await memberService.validateTokenAndGetCurrentUser(userId);
+        if (token && storedUserInfo) {
+          try {
+            // 토큰에서 사용자 정보 추출
+            const parsedUserInfo = JSON.parse(storedUserInfo) as UserInfo;
+            const userId = parsedUserInfo.id;
 
-        if (user) {
-          const combinedUserInfo = { ...parsedUserInfo, nickname: user.name, email: user.email };
-          setUserInfo(combinedUserInfo);
-          setIsLoggedIn(true);
-          localStorage.setItem('userInfo', JSON.stringify(combinedUserInfo));
-        } else {
-          throw new Error('User not found from API');
+            if (!userId) {
+              throw new Error('User ID not found in stored info.');
+            }
+            
+            const user = await memberService.validateTokenAndGetCurrentUser(userId);
+
+            if (user) {
+              const combinedUserInfo = { ...parsedUserInfo, nickname: user.name, email: user.email };
+              setUserInfo(combinedUserInfo);
+              setIsLoggedIn(true);
+              localStorage.setItem('userInfo', JSON.stringify(combinedUserInfo));
+            } else {
+              throw new Error('User not found from API');
+            }
+          } catch (e) {
+            console.error("Token validation failed", e);
+            // 토큰 오류 시 로그인 상태 초기화
+            localStorage.clear();
+            setIsLoggedIn(false);
+            setUserInfo(null);
+          }
         }
-      } catch (e) {
-        console.error("Token validation failed", e);
-        // 토큰 오류 시 로그인 상태 초기화
-        localStorage.clear();
-        setIsLoggedIn(false);
-        setUserInfo(null);
+      } catch (error) {
+        console.error("AuthProvider initialization failed:", error);
+      } finally {
+        // 항상 로딩 완료 처리
+        setIsLoading(false);
       }
-    }
+    };
 
     validateTokenOnLoad();
-  };
-
-  },[]); // 빈 배열: 컴포넌트 마운트 시 한 번만 실행
+  }, []); // 빈 배열: 컴포넌트 마운트 시 한 번만 실행
 
   const login = (accessToken: string, refreshToken: string, userData?: UserInfo) => {
     localStorage.setItem('accessToken', accessToken);

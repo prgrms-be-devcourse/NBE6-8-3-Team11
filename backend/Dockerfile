@@ -18,12 +18,14 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-# Install Redis and curl in one layer
-RUN apk add --no-cache curl redis && \
+# Install Redis, curl and timezone data
+RUN apk add --no-cache curl redis tzdata && \
+    cp /usr/share/zoneinfo/Asia/Seoul /etc/localtime && \
+    echo "Asia/Seoul" > /etc/timezone && \
     echo '#!/bin/sh' > /app/start.sh && \
     echo 'redis-server --daemonize yes --bind 127.0.0.1 --port 6379' >> /app/start.sh && \
     echo 'sleep 1' >> /app/start.sh && \
-    echo 'exec java -server -jar app.jar' >> /app/start.sh && \
+    echo 'exec java -server -Duser.timezone=Asia/Seoul -jar app.jar' >> /app/start.sh && \
     chmod +x /app/start.sh
 
 # Copy built jar
