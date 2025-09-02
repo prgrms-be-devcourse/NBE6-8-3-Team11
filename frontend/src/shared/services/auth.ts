@@ -1,4 +1,5 @@
 import { memberService, User } from './member';
+import { apiClient } from './apiClient';
 
 export async function getCurrentUser(): Promise<User | null> {
   if (typeof window !== 'undefined') {
@@ -85,5 +86,37 @@ export function clearCurrentUser(): void {
     localStorage.removeItem('userId');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('userName');
+  }
+}
+
+interface ReissueResponse {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export async function reissueToken(): Promise<ReissueResponse | null> {
+  try {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) {
+      throw new Error('No refresh token available');
+    }
+
+    const response = await apiClient.post<ReissueResponse>('/auth/reissue', {
+      refreshToken: refreshToken
+    });
+
+    if (response.success && response.content) {
+      localStorage.setItem('accessToken', response.content.accessToken);
+      localStorage.setItem('refreshToken', response.content.refreshToken);
+      return response.content;
+    }
+
+    throw new Error(response.message || 'Token reissue failed');
+  } catch (error) {
+    console.error('Token reissue failed:', error);
+    clearCurrentUser();
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    return null;
   }
 } 
