@@ -87,7 +87,7 @@ jobs:
       - name: Build Frontend
         run: npm run build
         env:
-          NEXT_PUBLIC_API_URL: https://nbe6-8-2-team11.onrender.com
+          NEXT_PUBLIC_API_URL: https://nbe6-8-3-team11.fly.dev
 
   # 메인 레포 PR용 슬랙 알림
   notify-slack:

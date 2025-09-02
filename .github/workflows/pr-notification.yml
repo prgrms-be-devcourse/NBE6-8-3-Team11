@@ -1,0 +1,104 @@
+# PR Notification - DISABLED during Kotlin migration
+#
+# Kotlin 마이그레이션 완료 후 아래 주석을 해제하여 활성화
+#
+# name: PR Notification
+# 
+# on:
+#   pull_request:
+#     types: [opened, synchronize, reopened]
+#     branches:
+#       - develop
+#       - main
+# 
+# jobs:
+#   notify-pr:
+#     name: Notify PR Updates
+#     runs-on: ubuntu-latest
+#     if: github.repository == 'prgrms-be-devcourse/NBE6-8-3-Team11'
+#     
+#     steps:
+#       - name: Send PR Notification
+#         env:
+#           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+#         run: |
+#           if [ -z "$SLACK_WEBHOOK_URL" ]; then
+#             echo "SLACK_WEBHOOK_URL이 설정되지 않았습니다."
+#             exit 0
+#           fi
+#           
+#           # PR 정보 수집
+#           pr_title="${{ github.event.pull_request.title }}"
+#           pr_url="${{ github.event.pull_request.html_url }}"
+#           pr_author="${{ github.event.pull_request.user.login }}"
+#           pr_number="${{ github.event.pull_request.number }}"
+#           pr_action="${{ github.event.action }}"
+#           
+#           # 액션별 메시지 설정
+#           case "$pr_action" in
+#             "opened")
+#               action_text="새 PR이 생성되었습니다"
+#               action_emoji="🆕"
+#               ;;
+#             "synchronize")
+#               action_text="PR이 업데이트되었습니다"
+#               action_emoji="🔄"
+#               ;;
+#             "reopened")
+#               action_text="PR이 다시 열렸습니다"
+#               action_emoji="🔓"
+#               ;;
+#           esac
+#           
+#           # Slack 메시지 생성
+#           cat << EOF > slack_message.json
+#           {
+#             "blocks": [
+#               {
+#                 "type": "header",
+#                 "text": {
+#                   "type": "plain_text",
+#                   "text": "${action_emoji} PR #${pr_number} - ${action_text}"
+#                 }
+#               },
+#               {
+#                 "type": "section",
+#                 "text": {
+#                   "type": "mrkdwn",
+#                   "text": "*${pr_title}*"
+#                 }
+#               },
+#               {
+#                 "type": "section",
+#                 "fields": [
+#                   {
+#                     "type": "mrkdwn",
+#                     "text": "*작성자*\n${pr_author}"
+#                   },
+#                   {
+#                     "type": "mrkdwn",
+#                     "text": "*액션*\n${action_text}"
+#                   }
+#                 ]
+#               },
+#               {
+#                 "type": "actions",
+#                 "elements": [
+#                   {
+#                     "type": "button",
+#                     "text": {
+#                       "type": "plain_text",
+#                       "text": "PR 보기"
+#                     },
+#                     "url": "${pr_url}"
+#                   }
+#                 ]
+#               }
+#             ]
+#           }
+#           EOF
+#           
+#           # Slack으로 메시지 전송
+#           curl -X POST -H 'Content-type: application/json' \
+#             --data @slack_message.json \
+#             "$SLACK_WEBHOOK_URL"
