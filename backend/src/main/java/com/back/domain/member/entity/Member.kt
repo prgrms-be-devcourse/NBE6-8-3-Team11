@@ -23,7 +23,7 @@ class Member(
     val id: Long = 0L,
 
     @Column(name = "member_email", nullable = false, unique = true)
-    private var _email: String,
+    var email: String,
 
     @Column(name = "member_password", nullable = false)
     private var _password: String,
@@ -54,10 +54,6 @@ class Member(
 
     ) : UserDetails {
 
-    val email: String
-        get() = _email
-
-
     @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL], orphanRemoval = true)
     val pets: MutableList<Pet> = mutableListOf()
 
@@ -75,7 +71,7 @@ class Member(
         return listOf(SimpleGrantedAuthority("ROLE_" + role.name))
     }
     override fun getPassword(): String = this._password
-    override fun getUsername(): String = this._email
+    override fun getUsername(): String = this.email
 
     override fun isAccountNonExpired(): Boolean = true
     override fun isAccountNonLocked(): Boolean = true

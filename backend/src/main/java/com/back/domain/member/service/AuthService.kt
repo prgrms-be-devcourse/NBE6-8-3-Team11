@@ -36,7 +36,7 @@ class AuthService(
         val encodedPassword = passwordEncoder.encode(requestDto.password)
 
         val newMember = Member(
-            _email = requestDto.email,
+            email = requestDto.email,
             _password = encodedPassword,
             name = requestDto.name,
             phone = requestDto.phone,

@@ -25,14 +25,14 @@ class Care private constructor(
     var desiredStartDate: LocalDateTime,
     
     @field:Column(name = "care_another_pets")
-    var anotherPets: String,
+    var anotherPets: String?,
     
     @field:Column(name = "care_experience")
     @field:Lob
-    var experience: String,
+    var experience: String?,
     
     @field:Column(name = "care_desired_end_date")
-    var desiredEndDate: LocalDateTime,
+    var desiredEndDate: LocalDateTime?,
     
     @field:Column(name = "care_status", nullable = false)
     @field:Enumerated(EnumType.STRING)
@@ -57,7 +57,8 @@ class Care private constructor(
         private set
 
     @CreatedDate
-    val createdAt: LocalDateTime? = null
+    lateinit var createdAt: LocalDateTime
+        protected set
 
     @OneToMany(mappedBy = "care", cascade = [CascadeType.ALL], orphanRemoval = true)
     val notifications: MutableList<Notification> = mutableListOf()
@@ -71,9 +72,9 @@ class Care private constructor(
             title: String,
             message: String,
             desiredStartDate: LocalDateTime,
-            anotherPets: String,
-            experience: String,
-            desiredEndDate: LocalDateTime,
+            anotherPets: String?,
+            experience: String?,
+            desiredEndDate: LocalDateTime?,
             member: Member,
             pet: Pet,
             applicant: Applicant,
