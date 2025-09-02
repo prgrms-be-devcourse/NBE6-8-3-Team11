@@ -41,8 +41,8 @@ internal class AuthControllerTest @Autowired constructor(
         // 모든 테스트에서 사용할 기본 사용자를 미리 생성
         testUser = memberRepository.save(
             Member(
-                _email = "test@test.com",
-                _password = passwordEncoder.encode("password123"),
+                email = "test@test.com",
+                password = passwordEncoder.encode("password123"),
                 name = "테스터",
                 phone = "010-0000-0000",
                 role = UserRole.USER

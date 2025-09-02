@@ -23,10 +23,11 @@ class Member(
     val id: Long = 0L,
 
     @Column(name = "member_email", nullable = false, unique = true)
-    private var _email: String,
+    var email: String,
+
 
     @Column(name = "member_password", nullable = false)
-    private var _password: String,
+    private var password: String,
 
     @Column(name = "member_name", nullable = false)
     var name: String,
@@ -54,9 +55,7 @@ class Member(
 
     ) : UserDetails {
 
-    val email: String
-        get() = _email
-
+    // 3. email 프로퍼티를 직접 사용하므로, 별도의 getter는 삭제한다.
 
     @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL], orphanRemoval = true)
     val pets: MutableList<Pet> = mutableListOf()
@@ -70,12 +69,14 @@ class Member(
     @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL], orphanRemoval = true)
     val notifications: MutableList<Notification> = mutableListOf()
 
-    //userDetail 오버라이딩
+    //userDetail 오버라이딩 (이제 _가 없는 프로퍼티를 가리킨다)
     override fun getAuthorities(): Collection<GrantedAuthority> {
         return listOf(SimpleGrantedAuthority("ROLE_" + role.name))
     }
-    override fun getPassword(): String = this._password
-    override fun getUsername(): String = this._email
+
+    override fun getPassword(): String = this.password
+
+    override fun getUsername(): String = this.email
 
     override fun isAccountNonExpired(): Boolean = true
     override fun isAccountNonLocked(): Boolean = true
@@ -91,7 +92,7 @@ class Member(
     }
 
     fun updatePassword(newPassword: String) {
-        this._password = newPassword
+        this.password = newPassword
     }
 
     fun updateRefreshToken(refreshToken: String?) {

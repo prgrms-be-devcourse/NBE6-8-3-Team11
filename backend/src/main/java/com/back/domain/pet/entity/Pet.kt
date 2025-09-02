@@ -46,7 +46,7 @@ class Pet protected constructor(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
-    var member: Member? = null
+    var member: Member
 ) {
     @CreatedDate
     @Column(updatable = false)
@@ -80,7 +80,7 @@ class Pet protected constructor(
             description: String? = null,
             imageUrl: String? = null,
             shelter: Shelter? = null,
-            member: Member? = null,
+            member: Member,
             statuses: List<PetStatus> = emptyList()
         ): Pet {
             val pet = Pet(

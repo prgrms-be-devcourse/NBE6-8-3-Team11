@@ -34,8 +34,8 @@ class CustomOAuth2UserService(
             val nickname = profile?.get("nickname") as? String
 
             val newMember = Member(
-                _email = email,
-                _password = "OAUTH2_USER_PASSWORD",
+                email = email,
+                password = "OAUTH2_USER_PASSWORD",
                 name = nickname ?: "사용자",
                 phone = "N/A",
                 role = UserRole.USER
