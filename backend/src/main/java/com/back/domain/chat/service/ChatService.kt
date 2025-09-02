@@ -153,9 +153,9 @@ class ChatService(
         return savedMessage
     }
 
-    fun getRecentMessagesFromRedis(roomId: Long?): List<Any>? {
+    fun getRecentMessagesFromRedis(roomId: Long?): List<Any> {
         val redisKey = "chat:room:$roomId:messages"
-        return redisTemplate.opsForList().range(redisKey, 0, -1)
+        return redisTemplate.opsForList().range(redisKey, 0, -1) ?: emptyList()
     }
 
     fun getUserChatRooms(memberEmail: String?): List<ChatRoomResponseDto> {
@@ -172,7 +172,7 @@ class ChatService(
             .orElseThrow { MemberException(MemberErrorCode.MEMBER_NOT_FOUND) }
 
         // Redis에서 가져온 메시지들을 ChatMessageResponse로 변환
-        val messageResponses = recentMessages?.filterIsInstance<ChatMessageDto>()?.map { messageDto ->
+        val messageResponses = recentMessages.filterIsInstance<ChatMessageDto>().map { messageDto ->
             ChatMessageResponseDto(
                 messageId = messageDto.id,
                 roomId = messageDto.chatRoomId,
@@ -181,7 +181,7 @@ class ChatService(
                 content = messageDto.content,
                 sentAt = messageDto.sentAt
             )
-        } ?: emptyList()
+        }
 
         // 사용자에게 최근 메시지 전송 -> roomId를 사용하여 특정 사용자에게 전송
         messagingTemplate.convertAndSend("/queue/user/$roomId/messages", messageResponses)
