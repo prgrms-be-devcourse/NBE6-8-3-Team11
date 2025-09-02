@@ -4,10 +4,10 @@ import com.back.domain.applicant.entity.Applicant
 import jakarta.validation.constraints.NotNull
 
 data class ApplicantRequestDto(
-    val name: @NotNull String,
-    val phone: @NotNull String,
-    val email: @NotNull String,
-    val address: @NotNull String
+    val name: @NotNull String = "",
+    val phone: @NotNull String = "",
+    val email: @NotNull String = "",
+    val address: @NotNull String = ""
 ) {
     companion object {
         fun of(applicantRequestDto: ApplicantRequestDto): Applicant {

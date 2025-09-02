@@ -11,10 +11,10 @@ data class CareResponseDto(
     val applicantInfo: ApplicantResponseDto,
     val title: String,
     val message: String,
-    val anotherPets: String,
-    val experience: String,
+    val anotherPets: String?,
+    val experience: String?,
     val desiredStartDate: LocalDateTime,
-    val desiredEndDate: LocalDateTime,
+    val desiredEndDate: LocalDateTime?,
     val createdAt: LocalDateTime?
 ) {
     companion object {
