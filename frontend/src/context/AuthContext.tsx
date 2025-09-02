@@ -24,41 +24,62 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     const validateTokenOnLoad = async () => {
-      const token = localStorage.getItem('accessToken');
-      const storedUserInfo = localStorage.getItem('userInfo');
-
-    if (token && storedUserInfo) {
       try {
-        // 토큰에서 사용자 정보 추출
-        const parsedUserInfo = JSON.parse(storedUserInfo) as UserInfo;
-        const userId = parsedUserInfo.id;
+        const token = localStorage.getItem('accessToken');
+        const storedUserInfo = localStorage.getItem('userInfo');
 
-        if (!userId) {
-          throw new Error('User ID not found in stored info.');
-        }
-        const user = await memberService.validateTokenAndGetCurrentUser(userId);
+        if (token && storedUserInfo) {
+          // 토큰에서 사용자 정보 추출
+          const parsedUserInfo = JSON.parse(storedUserInfo) as UserInfo;
+          const userId = parsedUserInfo.id;
 
-        if (user) {
-          const combinedUserInfo = { ...parsedUserInfo, nickname: user.name, email: user.email };
-          setUserInfo(combinedUserInfo);
-          setIsLoggedIn(true);
-          localStorage.setItem('userInfo', JSON.stringify(combinedUserInfo));
+          if (!userId) {
+            throw new Error('User ID not found in stored info.');
+          }
+
+          try {
+            const user = await memberService.validateTokenAndGetCurrentUser(userId);
+            if (user) {
+              const combinedUserInfo = { ...parsedUserInfo, nickname: user.name, email: user.email };
+              setUserInfo(combinedUserInfo);
+              setIsLoggedIn(true);
+              localStorage.setItem('userInfo', JSON.stringify(combinedUserInfo));
+            } else {
+              throw new Error('User not found from API');
+            }
+          } catch (apiError) {
+            // API 호출 실패 시 기존 저장된 사용자 정보로 로그인 상태 유지
+            console.warn('API call failed, using stored user info:', apiError);
+            setUserInfo(parsedUserInfo);
+            setIsLoggedIn(true);
+          }
         } else {
-          throw new Error('User not found from API');
+          // 토큰이나 사용자 정보가 없으면 로그아웃 상태로 설정
+          setIsLoggedIn(false);
+          setUserInfo(null);
         }
       } catch (e) {
         console.error("Token validation failed", e);
-        // 토큰 오류 시 로그인 상태 초기화
-        localStorage.clear();
+        // 네트워크 에러가 아닌 경우에만 로그아웃 처리
+        const isNetworkError = e instanceof TypeError && e.message === 'Failed to fetch';
+        if (!isNetworkError) {
+          // 인증 토큰 자체가 유효하지 않은 경우에만 localStorage 초기화
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('userInfo');
+          localStorage.removeItem('userId');
+          localStorage.removeItem('userEmail');
+          localStorage.removeItem('userName');
+        }
         setIsLoggedIn(false);
         setUserInfo(null);
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
 
     validateTokenOnLoad();
-  };
-
-  },[]); // 빈 배열: 컴포넌트 마운트 시 한 번만 실행
+  }, []); // 빈 배열: 컴포넌트 마운트 시 한 번만 실행
 
   const login = (accessToken: string, refreshToken: string, userData?: UserInfo) => {
     localStorage.setItem('accessToken', accessToken);
