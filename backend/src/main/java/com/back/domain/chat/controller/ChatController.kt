@@ -47,7 +47,7 @@ class ChatController(
         chatService.enterChatRoom(chatMessageRequest.roomId, chatMessageRequest.senderId)
 
         // 최근 메시지 전송
-        chatService.viewRecentMessagesToUser(userDetails.username, chatMessageRequest.senderId)
+        chatService.viewRecentMessagesToUser(userDetails.username, chatMessageRequest.roomId)
 
         log.info("User {} added to room {}", chatMessageRequest.senderId, chatMessageRequest.roomId)
     }
@@ -73,9 +73,9 @@ class ChatController(
     @Operation(summary = "채팅방 메시지 조회", description = "특정 채팅방의 메시지를 조회합니다.")
     fun getRecentMessagesFromRedis(
         @AuthenticationPrincipal userDetails: UserDetails, @PathVariable chatroomId: Long?
-    ): ResponseEntity<ApiResponse<Void?>> {
-        chatService.viewRecentMessagesToUser(userDetails.username, chatroomId)
-        return ResponseEntity.ok(ApiResponse.success(null))
+    ): ResponseEntity<ApiResponse<List<Any>>> {
+        val recent = chatService.getRecentMessagesFromRedis(chatroomId)
+        return ResponseEntity.ok(ApiResponse.success(recent))
     }
 
     @DeleteMapping("/{chatroomId}")
