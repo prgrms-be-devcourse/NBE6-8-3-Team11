@@ -83,7 +83,7 @@ internal class AdoptionControllerIntegrationTest {
         testMember = Member(
             email = "test@example.com",
             name = "테스트회원",
-            _password = "password123",
+            password = "password123",
             phone = "010-1234-5678",
             role = UserRole.USER
         )
@@ -93,7 +93,7 @@ internal class AdoptionControllerIntegrationTest {
         petOwner = Member(
             email = "owner@example.com",
             name = "펫소유자",
-            _password = "password123",
+            password = "password123",
             phone = "010-8765-4321",
             role = UserRole.USER
         )

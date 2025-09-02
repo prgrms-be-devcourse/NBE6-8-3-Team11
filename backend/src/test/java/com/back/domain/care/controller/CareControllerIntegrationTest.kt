@@ -68,7 +68,7 @@ internal class CareControllerIntegrationTest {
         testMember = Member(
             email = "test@example.com",
             name = "테스트회원",
-            _password = "password123",
+            password = "password123",
             phone = "010-1234-5678",
             role = UserRole.USER
         )
