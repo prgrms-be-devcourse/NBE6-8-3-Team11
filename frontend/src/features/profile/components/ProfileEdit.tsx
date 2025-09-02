@@ -103,19 +103,16 @@ export default function ProfileEdit({ user, setUser }: ProfileEditProps) {
 
       const data = await response.json();
 
-      const rawCreatedAt = data.content.createdAt;
-      const createdAt = Array.isArray(rawCreatedAt)
-          ? new Date(rawCreatedAt[0], rawCreatedAt[1] - 1, rawCreatedAt[2])
-          : new Date(rawCreatedAt);
-
+      // 응답 데이터 처리 단순화
       const updatedUser: User = {
         memberId: data.content.memberId,
         name: data.content.name,
         email: data.content.email,
-        phone: data.content.phone,
-        address: data.content.address,
-        bio: data.content.bio,
-        createdAt,
+        phone: data.content.phone || '',
+        address: data.content.address || '',
+        bio: data.content.bio || '',
+        // createdAt 처리 개선
+        createdAt: data.content.createdAt ? new Date(data.content.createdAt) : new Date(),
         // Context의 현재 값을 User 객체에도 동기화
         memberType: getMemberType(),
       };
@@ -191,7 +188,7 @@ export default function ProfileEdit({ user, setUser }: ProfileEditProps) {
 
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                전화번호 *
+                전화번호
               </label>
               <input
                   type="tel"
@@ -199,14 +196,17 @@ export default function ProfileEdit({ user, setUser }: ProfileEditProps) {
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  required
+                  placeholder="전화번호를 입력해주세요"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
               />
+              {!formData.phone && (
+                <p className="mt-1 text-xs text-gray-500">전화번호를 입력하시면 더 나은 서비스를 제공받으실 수 있습니다.</p>
+              )}
             </div>
 
             <div>
               <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-                주소 *
+                주소
               </label>
               <input
                   type="text"
@@ -214,7 +214,7 @@ export default function ProfileEdit({ user, setUser }: ProfileEditProps) {
                   name="address"
                   value={formData.address}
                   onChange={handleInputChange}
-                  required
+                  placeholder="주소를 입력해주세요"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
               />
             </div>
@@ -299,7 +299,7 @@ export default function ProfileEdit({ user, setUser }: ProfileEditProps) {
           </button>
           <button
               type="submit"
-              disabled={isSubmitting || !formData.memberType}
+              disabled={isSubmitting}
               className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isSubmitting ? '저장 중...' : '저장'}
