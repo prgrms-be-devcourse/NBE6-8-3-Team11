@@ -69,4 +69,19 @@ public class HealthCheckController {
         response.put("message", "Server is running");
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/")
+    public ResponseEntity<Map<String, Object>> root() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "🐾 PetMatching API Server is running!");
+        response.put("version", "v1.0.0");
+        response.put("endpoints", Map.of(
+            "health", "/health",
+            "swagger", "/swagger-ui.html",
+            "api", "/api"
+        ));
+        response.put("timestamp", System.currentTimeMillis());
+        return ResponseEntity.ok(response);
+    }
 }
