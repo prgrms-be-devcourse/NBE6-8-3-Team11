@@ -37,7 +37,9 @@ class AuthService(
 
         val newMember = Member(
             email = requestDto.email,
+
             password = encodedPassword,
+
             name = requestDto.name,
             phone = requestDto.phone,
             role = UserRole.USER

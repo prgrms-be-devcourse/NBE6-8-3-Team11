@@ -25,7 +25,6 @@ class Member(
     @Column(name = "member_email", nullable = false, unique = true)
     var email: String,
 
-
     @Column(name = "member_password", nullable = false)
     private var password: String,
 
@@ -55,8 +54,6 @@ class Member(
 
     ) : UserDetails {
 
-    // 3. email 프로퍼티를 직접 사용하므로, 별도의 getter는 삭제한다.
-
     @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL], orphanRemoval = true)
     val pets: MutableList<Pet> = mutableListOf()
 
@@ -73,6 +70,7 @@ class Member(
     override fun getAuthorities(): Collection<GrantedAuthority> {
         return listOf(SimpleGrantedAuthority("ROLE_" + role.name))
     }
+
 
     override fun getPassword(): String = this.password
 

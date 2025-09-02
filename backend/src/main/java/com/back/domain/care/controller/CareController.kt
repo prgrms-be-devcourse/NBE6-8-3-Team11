@@ -1,6 +1,6 @@
 package com.back.domain.care.controller
 
-import com.back.domain.care.dto.request.CareRequestDto
+import CareRequestDto
 import com.back.domain.care.dto.response.CareResponseDto
 import com.back.domain.care.service.CareService
 import com.back.global.common.ApiResponse

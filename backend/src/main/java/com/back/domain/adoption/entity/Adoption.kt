@@ -51,7 +51,8 @@ class Adoption private constructor(
         private set
 
     @CreatedDate
-    val createdAt: LocalDateTime? = null
+    lateinit var createdAt: LocalDateTime
+        protected set
 
     @OneToMany(mappedBy = "adoption", cascade = [CascadeType.ALL], orphanRemoval = true)
     val notifications: MutableList<Notification> = mutableListOf()

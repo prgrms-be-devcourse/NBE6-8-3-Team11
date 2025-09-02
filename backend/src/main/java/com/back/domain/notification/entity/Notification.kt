@@ -46,7 +46,10 @@ class Notification private constructor(
     var isRead: Boolean = false
 
     @CreatedDate
-    val createdAt: LocalDateTime? = null
+    @Column(name = "created_at")
+    var createdAt: LocalDateTime? = null
+        private set
+
 
     fun markAsRead() {
         isRead = !isRead
