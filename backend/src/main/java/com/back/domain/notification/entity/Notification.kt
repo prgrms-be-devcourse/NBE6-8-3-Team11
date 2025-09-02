@@ -50,6 +50,7 @@ class Notification private constructor(
     var createdAt: LocalDateTime? = null
         private set
 
+
     fun markAsRead() {
         isRead = !isRead
     }

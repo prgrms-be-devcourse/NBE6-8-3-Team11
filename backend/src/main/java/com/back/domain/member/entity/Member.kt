@@ -26,7 +26,7 @@ class Member(
     var email: String,
 
     @Column(name = "member_password", nullable = false)
-    private var _password: String,
+    private var password: String,
 
     @Column(name = "member_name", nullable = false)
     var name: String,
@@ -66,11 +66,14 @@ class Member(
     @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL], orphanRemoval = true)
     val notifications: MutableList<Notification> = mutableListOf()
 
-    //userDetail 오버라이딩
+    //userDetail 오버라이딩 (이제 _가 없는 프로퍼티를 가리킨다)
     override fun getAuthorities(): Collection<GrantedAuthority> {
         return listOf(SimpleGrantedAuthority("ROLE_" + role.name))
     }
-    override fun getPassword(): String = this._password
+
+
+    override fun getPassword(): String = this.password
+
     override fun getUsername(): String = this.email
 
     override fun isAccountNonExpired(): Boolean = true
@@ -87,7 +90,7 @@ class Member(
     }
 
     fun updatePassword(newPassword: String) {
-        this._password = newPassword
+        this.password = newPassword
     }
 
     fun updateRefreshToken(refreshToken: String?) {

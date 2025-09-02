@@ -254,11 +254,11 @@ class AdoptionService(
     private fun updatePetStatus(pet: Pet, newStatus: PetStatusType) {
         pet.petStatuses.clear()
         // 다른 도메인 마이그레이션으로 인한 에러 임시 주석 처리
-//        pet.petStatuses.add(
-////            PetStatus.create(
-////                status = newStatus,
-////                pet = pet
-////            )
-//        )
+        pet.petStatuses.add(
+            PetStatus.create(
+                status = newStatus,
+                pet = pet
+            )
+        )
     }
 }

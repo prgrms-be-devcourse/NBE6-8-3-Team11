@@ -44,6 +44,7 @@ class Pet protected constructor(
     @JoinColumn(name = "shelter_id", nullable = true)
     var shelter: Shelter? = null,
 
+
 ) {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)

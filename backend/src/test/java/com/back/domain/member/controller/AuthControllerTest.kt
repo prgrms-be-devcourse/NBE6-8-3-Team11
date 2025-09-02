@@ -42,7 +42,9 @@ internal class AuthControllerTest @Autowired constructor(
         testUser = memberRepository.save(
             Member(
                 email = "test@test.com",
-                _password = passwordEncoder.encode("password123"),
+
+                password = passwordEncoder.encode("password123"),
+
                 name = "테스터",
                 phone = "010-0000-0000",
                 role = UserRole.USER

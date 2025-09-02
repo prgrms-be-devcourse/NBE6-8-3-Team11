@@ -45,7 +45,9 @@ internal class MemberAdminControllerTest @Autowired constructor(
         val user = memberRepository.save(
             Member(
                 email = "user@test.com",
-                _password = passwordEncoder.encode("password"),
+
+                password = passwordEncoder.encode("password"),
+
                 name = "일반유저",
                 phone = "010-1111-1111",
                 role = UserRole.USER
@@ -55,7 +57,9 @@ internal class MemberAdminControllerTest @Autowired constructor(
         val admin = memberRepository.save(
             Member(
                 email = "admin@test.com",
-                _password = passwordEncoder.encode("password"),
+
+                password = passwordEncoder.encode("password"),
+
                 name = "관리자",
                 phone = "010-2222-2222",
                 role = UserRole.ADMIN

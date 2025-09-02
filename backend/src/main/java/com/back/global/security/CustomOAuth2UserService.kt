@@ -35,7 +35,8 @@ class CustomOAuth2UserService(
 
             val newMember = Member(
                 email = email,
-                _password = "OAUTH2_USER_PASSWORD",
+                password = "OAUTH2_USER_PASSWORD",
+
                 name = nickname ?: "사용자",
                 phone = "N/A",
                 role = UserRole.USER
