@@ -4,9 +4,10 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    # Fly.io 내부 PostgreSQL 연결 방식
+    url: jdbc:postgresql://nbe6-8-3-team11-db.flycast:5432/postgres?sslmode=disable
+    username: postgres
+    password: AI4EYSNes1vrxe2
     driver-class-name: org.postgresql.Driver
     hikari:
       auto-commit: false
@@ -26,12 +27,12 @@ spring:
         format_sql: false
         highlight_sql: false
 
-  # Redis 설정 - 연결 실패해도 애플리케이션 시작 허용
+  # Redis 설정 - Fly.io 내부에서 localhost로 연결
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
+      host: localhost
+      port: 6379
+      password: ""
       timeout: 2000ms
       connect-timeout: 2000ms
       repositories:
@@ -44,11 +45,11 @@ spring:
       client:
         registration:
           kakao:
-            client-id: ${KAKAO_CLIENT_ID:a55fbac2b1ec1017835ea67b2a584ad5}
+            client-id: a55fbac2b1ec1017835ea67b2a584ad5
             scope: profile_nickname, profile_image, account_email
             client-name: Kakao
             authorization-grant-type: authorization_code
-            redirect-uri: ${OAUTH2_REDIRECT_URI}
+            redirect-uri: https://nbe6-8-3-team11.fly.dev/login/oauth2/code/kakao
         provider:
           kakao:
             authorization-uri: https://kauth.kakao.com/oauth/authorize
@@ -57,9 +58,9 @@ spring:
             user-name-attribute: id
 
 jwt:
-  secret: ${JWT_SECRET}
-  access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:PT2H}
-  refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:PT168H}
+  secret: myVeryLongSecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLongAndSecureEnoughForProductionUse123456789
+  access-token-expiration: PT2H
+  refresh-token-expiration: PT168H
 
 cookie:
   secure: true
@@ -78,7 +79,7 @@ management:
   endpoint:
     health:
       show-details: when-authorized
-      # Redis 헬스체크에서 제외
+      # Redis 헬스체크에서 제외 (연결 실패해도 OK)
       show-components: never
 
 logging:
@@ -87,4 +88,4 @@ logging:
     com.back: DEBUG
     org.springframework.web.socket: DEBUG
     org.springframework.messaging: DEBUG
-    org.springframework.data.redis: DEBUG
+    org.springframework.data.redis: WARN
