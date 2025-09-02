@@ -30,6 +30,12 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+    
+    // Kotlin 지원 의존성 추가
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("com.h2database:h2")
@@ -75,4 +81,21 @@ allOpen {
     annotation("org.springframework.stereotype.Service")
     annotation("org.springframework.stereotype.Component")
     annotation("org.springframework.transaction.annotation.Transactional")
+}
+
+// Kotlin 컴파일 설정 추가
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
+    }
+}
+
+// Java와 Kotlin 동시 컴파일 지원
+sourceSets {
+    main {
+        java.srcDirs("src/main/java", "src/main/kotlin")
+    }
+    test {
+        java.srcDirs("src/test/java", "src/test/kotlin")
+    }
 }
