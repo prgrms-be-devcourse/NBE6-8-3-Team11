@@ -1,4 +1,4 @@
-# Multi-stage build for optimized image size
+# 단순화된 빠른 빌드용 Dockerfile
 FROM eclipse-temurin:21-jdk-alpine as builder
 
 WORKDIR /app
@@ -8,11 +8,9 @@ COPY gradlew ./
 COPY gradle ./gradle/
 COPY build.gradle.kts ./
 COPY settings.gradle.kts ./
-
-# Copy source code
 COPY src ./src/
 
-# Make gradlew executable and build
+# 빠른 빌드 (복잡한 캐싱 제거)
 RUN chmod +x gradlew && ./gradlew build -x test --no-daemon
 
 # Runtime stage
@@ -20,28 +18,25 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-# Install Redis and curl
-RUN apk add --no-cache curl redis
-
-# Create a startup script
-RUN echo '#!/bin/sh' > /app/start.sh && \
+# Install Redis, curl and timezone data
+RUN apk add --no-cache curl redis tzdata && \
+    cp /usr/share/zoneinfo/Asia/Seoul /etc/localtime && \
+    echo "Asia/Seoul" > /etc/timezone && \
+    echo '#!/bin/sh' > /app/start.sh && \
     echo 'redis-server --daemonize yes --bind 127.0.0.1 --port 6379' >> /app/start.sh && \
-    echo 'sleep 2' >> /app/start.sh && \
-    echo 'java -Dserver.address=0.0.0.0 -Dserver.port=${PORT:-8080} -jar app.jar' >> /app/start.sh && \
+    echo 'sleep 1' >> /app/start.sh && \
+    echo 'exec java -server -Duser.timezone=Asia/Seoul -jar app.jar' >> /app/start.sh && \
     chmod +x /app/start.sh
 
-# Copy built jar from builder stage
+# Copy built jar
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-# Expose port
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+# 빠른 헬스체크
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=2 \
     CMD curl -f http://localhost:8080/actuator/health || exit 1
 
-# Set fly profile for Fly.io deployment
 ENV SPRING_PROFILES_ACTIVE=fly
 
-# Start Redis first, then Spring Boot
 CMD ["/app/start.sh"]

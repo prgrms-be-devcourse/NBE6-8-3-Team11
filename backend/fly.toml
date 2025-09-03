@@ -1,8 +1,4 @@
-# fly.toml app configuration file generated for nbe6-8-3-team11 on 2025-08-28T11:14:36+09:00
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
-
+# 빠른 배포를 위한 단순화된 설정
 app = 'nbe6-8-3-team11'
 primary_region = 'nrt'
 
@@ -32,6 +28,6 @@ primary_region = 'nrt'
     port = 8080
     method = "get"
     path = "/actuator/health"
-    timeout = "30s"
-    interval = "60s"  
-    grace_period = "60s"
+    timeout = "10s"
+    interval = "30s"  
+    grace_period = "15s"

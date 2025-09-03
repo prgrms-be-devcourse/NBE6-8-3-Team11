@@ -1,126 +1,122 @@
-# CD Release - DISABLED during Kotlin migration
-#
-# Kotlin 마이그레이션 완료 후 아래 주석을 해제하여 활성화
-#
-# name: CD Release - Deploy to Fly.io
-# 
-# on:
-#   release:
-#     types: [published]
-#   workflow_dispatch:
-# 
-# jobs:
-#   deploy-production:
-#     name: Deploy Production to Fly.io
-#     runs-on: ubuntu-latest
-#     if: github.repository == 'prgrms-be-devcourse/NBE6-8-3-Team11'
-#     
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v4
-# 
-#       - name: Set up JDK 21
-#         uses: actions/setup-java@v4
-#         with:
-#           distribution: 'temurin'
-#           java-version: '21'
-# 
-#       - name: Setup Gradle
-#         uses: gradle/actions/setup-gradle@v3
-# 
-#       - name: Grant execute permission to gradlew
-#         working-directory: ./backend
-#         run: chmod +x ./gradlew
-# 
-#       - name: Build with Gradle (Production)
-#         working-directory: ./backend
-#         run: ./gradlew clean build --no-daemon
-#         env:
-#           SPRING_PROFILES_ACTIVE: fly
-# 
-#       - name: Setup Fly.io CLI
-#         uses: superfly/flyctl-actions/setup-flyctl@master
-# 
-#       - name: Deploy Production to Fly.io
-#         working-directory: ./backend
-#         run: flyctl deploy --remote-only --app nbe6-8-3-team11
-#         env:
-#           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-# 
-#   notify-release:
-#     name: Notify Release Deployment
-#     runs-on: ubuntu-latest
-#     needs: deploy-production
-#     if: always() && github.repository == 'prgrms-be-devcourse/NBE6-8-3-Team11'
-#     
-#     steps:
-#       - name: Notify release deployment
-#         env:
-#           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-#         run: |
-#           if [ -z "$SLACK_WEBHOOK_URL" ]; then
-#             echo "⚠️ SLACK_WEBHOOK_URL이 설정되지 않았습니다."
-#             exit 0
-#           fi
-#           
-#           # 릴리즈 정보
-#           release_tag="${{ github.event.release.tag_name }}"
-#           release_name="${{ github.event.release.name }}"
-#           release_url="${{ github.event.release.html_url }}"
-#           
-#           # 배포 결과에 따른 메시지 설정
-#           if [ "${{ needs.deploy-production.result }}" == "success" ]; then
-#             status_emoji="🚀"
-#             status_text="프로덕션 배포 성공"
-#             color="good"
-#           else
-#             status_emoji="💥"
-#             status_text="프로덕션 배포 실패"  
-#             color="danger"
-#           fi
-#           
-#           # Slack 메시지 생성
-#           cat << EOF > slack_message.json
-#           {
-#             "attachments": [
-#               {
-#                 "color": "${color}",
-#                 "blocks": [
-#                   {
-#                     "type": "header",
-#                     "text": {
-#                       "type": "plain_text",
-#                       "text": "${status_emoji} NBE6-8-3 프로덕션 릴리즈"
-#                     }
-#                   },
-#                   {
-#                     "type": "section",
-#                     "fields": [
-#                       {
-#                         "type": "mrkdwn",
-#                         "text": "*릴리즈*\n<${release_url}|${release_name}>"
-#                       },
-#                       {
-#                         "type": "mrkdwn",
-#                         "text": "*태그*\n\`${release_tag}\`"
-#                       },
-#                       {
-#                         "type": "mrkdwn",
-#                         "text": "*상태*\n${status_text}"
-#                       },
-#                       {
-#                         "type": "mrkdwn",
-#                         "text": "*URL*\nhttps://nbe6-8-3-team11.fly.dev"
-#                       }
-#                     ]
-#                   }
-#                 ]
-#               }
-#             ]
-#           }
-#           EOF
-#           
-#           # Slack으로 메시지 전송
-#           curl -X POST -H 'Content-type: application/json' \
-#             --data @slack_message.json \
-#             "$SLACK_WEBHOOK_URL"
+name: CD Release - Deploy to Fly.io
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  deploy-production:
+    name: Deploy Production to Fly.io
+    runs-on: ubuntu-latest
+    if: github.repository == 'prgrms-be-devcourse/NBE6-8-3-Team11'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Grant execute permission to gradlew
+        working-directory: ./backend
+        run: chmod +x ./gradlew
+
+      - name: Build with Gradle (Production)
+        working-directory: ./backend
+        run: ./gradlew clean build --no-daemon
+        env:
+          SPRING_PROFILES_ACTIVE: fly
+
+      - name: Setup Fly.io CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy Production to Fly.io
+        working-directory: ./backend
+        run: flyctl deploy --remote-only --app nbe6-8-3-team11
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  notify-release:
+    name: Notify Release Deployment
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: always() && github.repository == 'prgrms-be-devcourse/NBE6-8-3-Team11'
+    
+    steps:
+      - name: Notify release deployment
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "⚠️ SLACK_WEBHOOK_URL이 설정되지 않았습니다."
+            exit 0
+          fi
+          
+          # 릴리즈 정보
+          release_tag="${{ github.event.release.tag_name }}"
+          release_name="${{ github.event.release.name }}"
+          release_url="${{ github.event.release.html_url }}"
+          
+          # 배포 결과에 따른 메시지 설정
+          if [ "${{ needs.deploy-production.result }}" == "success" ]; then
+            status_emoji="🚀"
+            status_text="프로덕션 배포 성공"
+            color="good"
+          else
+            status_emoji="💥"
+            status_text="프로덕션 배포 실패"  
+            color="danger"
+          fi
+          
+          # Slack 메시지 생성
+          cat << EOF > slack_message.json
+          {
+            "attachments": [
+              {
+                "color": "${color}",
+                "blocks": [
+                  {
+                    "type": "header",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "${status_emoji} NBE6-8-3 프로덕션 릴리즈"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      {
+                        "type": "mrkdwn",
+                        "text": "*릴리즈*\n<${release_url}|${release_name}>"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*태그*\n\`${release_tag}\`"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*상태*\n${status_text}"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*URL*\nhttps://nbe6-8-3-team11.fly.dev"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+          
+          # Slack으로 메시지 전송
+          curl -X POST -H 'Content-type: application/json' \
+            --data @slack_message.json \
+            "$SLACK_WEBHOOK_URL"

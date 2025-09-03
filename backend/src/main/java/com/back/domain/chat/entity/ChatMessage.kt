@@ -29,7 +29,9 @@ class ChatMessage private constructor(
         private set
 
     @CreatedDate
+    @Column(updatable = false)
     var sentAt: LocalDateTime? = LocalDateTime.now()
+        private set
 
     companion object {
         fun create(
