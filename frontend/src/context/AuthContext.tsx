@@ -29,17 +29,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const storedUserInfo = localStorage.getItem('userInfo');
 
         if (token && storedUserInfo) {
+          // 토큰에서 사용자 정보 추출
+          const parsedUserInfo = JSON.parse(storedUserInfo) as UserInfo;
+          const userId = parsedUserInfo.id;
+
+          if (!userId) {
+            throw new Error('User ID not found in stored info.');
+          }
+
           try {
-            // 토큰에서 사용자 정보 추출
-            const parsedUserInfo = JSON.parse(storedUserInfo) as UserInfo;
-            const userId = parsedUserInfo.id;
-
-            if (!userId) {
-              throw new Error('User ID not found in stored info.');
-            }
-            
             const user = await memberService.validateTokenAndGetCurrentUser(userId);
-
             if (user) {
               const combinedUserInfo = { ...parsedUserInfo, nickname: user.name, email: user.email };
               setUserInfo(combinedUserInfo);
@@ -48,18 +47,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
             } else {
               throw new Error('User not found from API');
             }
-          } catch (e) {
-            console.error("Token validation failed", e);
-            // 토큰 오류 시 로그인 상태 초기화
-            localStorage.clear();
-            setIsLoggedIn(false);
-            setUserInfo(null);
+          } catch (apiError) {
+            // API 호출 실패 시 기존 저장된 사용자 정보로 로그인 상태 유지
+            console.warn('API call failed, using stored user info:', apiError);
+            setUserInfo(parsedUserInfo);
+            setIsLoggedIn(true);
           }
+        } else {
+          // 토큰이나 사용자 정보가 없으면 로그아웃 상태로 설정
+          setIsLoggedIn(false);
+          setUserInfo(null);
         }
-      } catch (error) {
-        console.error("AuthProvider initialization failed:", error);
+      } catch (e) {
+        console.error("Token validation failed", e);
+        // 네트워크 에러가 아닌 경우에만 로그아웃 처리
+        const isNetworkError = e instanceof TypeError && e.message === 'Failed to fetch';
+        if (!isNetworkError) {
+          // 인증 토큰 자체가 유효하지 않은 경우에만 localStorage 초기화
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('userInfo');
+          localStorage.removeItem('userId');
+          localStorage.removeItem('userEmail');
+          localStorage.removeItem('userName');
+        }
+        setIsLoggedIn(false);
+        setUserInfo(null);
       } finally {
-        // 항상 로딩 완료 처리
         setIsLoading(false);
       }
     };
