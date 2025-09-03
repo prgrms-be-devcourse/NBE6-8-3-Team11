@@ -25,20 +25,19 @@ export default function ProfileEdit({ user, setUser }: ProfileEditProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
 
-  // 초기화 및 데이터 복원
+  // 초기화 및 데이터 복원 (tempFormData 사용 중단)
   useEffect(() => {
     if (user) {
-      // 임시 저장된 데이터가 있으면 우선 사용, 없으면 사용자 데이터 사용
       setFormData({
-        name: tempFormData.name || user.name || '',
+        name: user.name || '',
         email: user.email || '',
-        phone: tempFormData.phone || user.phone || '',
-        address: tempFormData.address || user.address || '',
-        bio: tempFormData.bio || user.bio || '',
+        phone: user.phone || '',
+        address: user.address || '',
+        bio: user.bio || '',
         memberType: getMemberType(user.memberType)
       });
     }
-  }, [user, tempFormData, getMemberType]);
+  }, [user, getMemberType]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -50,17 +49,7 @@ export default function ProfileEdit({ user, setUser }: ProfileEditProps) {
     
     setFormData(newFormData);
     
-    // 입력 값을 임시 저장 (이메일 제외)
-    if (name !== 'email') {
-      setTempFormData({
-        name: newFormData.name,
-        phone: newFormData.phone,
-        address: newFormData.address,
-        bio: newFormData.bio
-      });
-    }
-    
-    // memberType 변경 시 Context에 즉시 저장
+    // memberType 변경 시 Context에 즉시 저장 (tempFormData는 제거)
     if (name === 'memberType') {
       setMemberType(value as 'adopter' | 'shelter');
     }
