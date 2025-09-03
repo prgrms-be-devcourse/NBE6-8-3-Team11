@@ -33,7 +33,23 @@ export default function ProfileInfo({ user }: ProfileInfoProps) {
     return 'bg-green-100 text-green-800';
   };
 
-
+  // 날짜 포맷팅 함수
+  const formatUserDate = (date: Date | string | undefined) => {
+    if (!date) return '날짜 미상';
+    
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      if (isNaN(dateObj.getTime())) return '날짜 미상';
+      
+      return dateObj.toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return '날짜 미상';
+    }
+  };
 
   return (
       <div className="space-y-6">
@@ -63,7 +79,7 @@ export default function ProfileInfo({ user }: ProfileInfoProps) {
             <span className={`${getMemberTypeClass(finalMemberType)} px-3 py-1 rounded-full`}>
               {getMemberTypeLabel(finalMemberType)}
             </span>
-              <span>가입일: {formatDate(user.createdAt)}</span>
+              <span>가입일: {formatUserDate(user.createdAt)}</span>
             </div>
           </div>
         </div>
@@ -76,17 +92,17 @@ export default function ProfileInfo({ user }: ProfileInfoProps) {
             <div className="space-y-3">
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600">전화번호</span>
-                <span className="font-medium">{user.phone}</span>
+                <span className="font-medium">{user.phone || '미입력'}</span>
               </div>
 
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600">주소</span>
-                <span className="font-medium">{user.address}</span>
+                <span className="font-medium">{user.address || '미입력'}</span>
               </div>
 
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600">가입일</span>
-                <span className="font-medium">{formatDate(user.createdAt)}</span>
+                <span className="font-medium">{formatUserDate(user.createdAt)}</span>
               </div>
             </div>
           </div>
