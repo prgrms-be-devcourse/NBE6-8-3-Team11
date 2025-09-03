@@ -38,7 +38,8 @@ class CustomOAuth2UserService(
                 password = "OAUTH2_USER_PASSWORD",
                 name = nickname ?: "사용자",
                 phone = null, // N/A 대신 null로 설정
-                role = UserRole.USER
+                role = UserRole.USER,
+                address = null
             )
             memberRepository.save(newMember)
         }
