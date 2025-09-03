@@ -42,7 +42,7 @@ class Member(
     var refreshToken: String? = null,
 
     @Column(name = "member_address")
-    var address: String? = null,
+    var address: String?,
 
     @Lob
     @Column(name = "member_bio")
@@ -51,6 +51,10 @@ class Member(
     @CreatedDate
     @Column(nullable = false, updatable = false)
     var createdAt: LocalDateTime = LocalDateTime.now(),
+
+
+    @Column(name = "member_type")
+    var memberType: String? = "adopter",
 
     ) : UserDetails {
 
@@ -66,7 +70,7 @@ class Member(
     @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL], orphanRemoval = true)
     val notifications: MutableList<Notification> = mutableListOf()
 
-    //userDetail 오버라이딩 (이제 _가 없는 프로퍼티를 가리킨다)
+    //userDetail 오버라이딩
     override fun getAuthorities(): Collection<GrantedAuthority> {
         return listOf(SimpleGrantedAuthority("ROLE_" + role.name))
     }
@@ -82,11 +86,12 @@ class Member(
     override fun isEnabled(): Boolean = true
 
     // 비즈니스 로직
-    fun updateInfo(name: String, phone: String?, address: String?, bio: String?) {
+    fun updateInfo(name: String, phone: String?, address: String?, bio: String?,memberType: String?) {
         this.name = name
         this.phone = phone
         this.address = address
         this.bio = bio
+        this.memberType = memberType ?: this.memberType
     }
 
     fun updatePassword(newPassword: String) {
