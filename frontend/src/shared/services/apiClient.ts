@@ -80,8 +80,14 @@ class ApiClient {
           url: url
         });
         
-        // 401 Unauthorized 에러 처리
+        // 401 Unauthorized 에러 처리 - 로그인 요청이 아닌 경우에만 토큰 갱신 시도
         if (response.status === 401) {
+          // 로그인 요청인 경우 토큰 갱신을 시도하지 않고 오류를 그대로 전달
+          if (normalizedEndpoint.includes('/auth/login')) {
+            // 로그인 실패 시 친절한 메시지 전달
+            throw new Error('이메일 또는 비밀번호가 올바르지 않습니다.');
+          }
+          
           // reissue 엔드포인트가 아닌 경우에만 토큰 갱신 시도
           if (!normalizedEndpoint.includes('/auth/reissue')) {
             const refreshToken = localStorage.getItem('refreshToken');
@@ -140,8 +146,29 @@ class ApiClient {
           if (typeof window !== 'undefined') {
             window.location.href = '/login';
           }
+          
+          // 401 오류는 이미 처리했으므로 여기서 종료
+          throw new Error('인증이 필요합니다. 다시 로그인해주세요.');
         }
-        throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+        
+        // [수정!] 서버가 보낸 상세 에러 메시지를 읽어서 반환 (401이 아닌 경우)
+        try {
+          const errorData = await response.json();
+          console.log('📄 Error Response Data:', errorData);
+          console.log('📄 Error Response Status:', response.status);
+          console.log('📄 Error Response Headers:', Object.fromEntries(response.headers.entries()));
+          
+          // 백엔드에서 보낸 message 필드가 있으면 사용, 없으면 기본 메시지
+          if (errorData && errorData.message) {
+            throw new Error(errorData.message);
+          } else {
+            throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+          }
+        } catch (jsonError) {
+          console.log('📄 JSON Parse Error:', jsonError);
+          // Response body를 이미 읽었으므로 다시 읽지 않음
+          throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+        }
       }
       
       // 응답이 비어있는지 확인

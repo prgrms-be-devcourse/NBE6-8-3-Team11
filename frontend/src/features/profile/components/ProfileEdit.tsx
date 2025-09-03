@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { User } from '../types';
 import { useMemberType } from '../../../context/MemberTypeContext';
 
@@ -9,78 +9,63 @@ interface ProfileEditProps {
   setUser: (user: User | null) => void;
 }
 
-export default function ProfileEdit({ user, setUser }: ProfileEditProps) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { memberType, setMemberType, getMemberType, tempFormData, setTempFormData, clearTempFormData } = useMemberType();
+interface FormData {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  bio: string;
+  memberType: 'adopter' | 'shelter';
+}
 
-  const [formData, setFormData] = useState({
+export default function ProfileEdit({ user, setUser }: ProfileEditProps) {
+  const { setMemberType: setGlobalMemberType } = useMemberType();
+
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
     phone: '',
     address: '',
     bio: '',
-    memberType: 'adopter' as 'adopter' | 'shelter'
+    memberType: 'adopter'
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
 
-  // 초기화 및 데이터 복원
   useEffect(() => {
     if (user) {
-      // 임시 저장된 데이터가 있으면 우선 사용, 없으면 사용자 데이터 사용
       setFormData({
-        name: tempFormData.name || user.name || '',
-        email: user.email || '',
-        phone: tempFormData.phone || user.phone || '',
-        address: tempFormData.address || user.address || '',
-        bio: tempFormData.bio || user.bio || '',
-        memberType: getMemberType(user.memberType)
+        name: user.name ?? '',
+        email: user.email ?? '',
+        phone: user.phone ?? '',
+        address: user.address ?? '',
+        bio: user.bio ?? '',
+        memberType: user.memberType ?? 'adopter',
       });
     }
-  }, [user, tempFormData, getMemberType]);
+  }, [user]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    
-    const newFormData = {
-      ...formData,
-      [name]: value
-    };
-    
-    setFormData(newFormData);
-    
-    // 입력 값을 임시 저장 (이메일 제외)
-    if (name !== 'email') {
-      setTempFormData({
-        name: newFormData.name,
-        phone: newFormData.phone,
-        address: newFormData.address,
-        bio: newFormData.bio
-      });
-    }
-    
-    // memberType 변경 시 Context에 즉시 저장
-    if (name === 'memberType') {
-      setMemberType(value as 'adopter' | 'shelter');
-    }
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setMessage('');
 
+    if (!user) {
+      setMessage('사용자 정보가 없습니다.');
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      if (!user) {
-        throw new Error('사용자 정보가 없습니다.');
-      }
-
-      // memberType 설정 여부 확인
-      if (!formData.memberType) {
-        throw new Error('회원 유형을 선택해주세요.');
-      }
-
       const response = await fetch(`/api/members/${user.memberId}`, {
         method: 'PUT',
         headers: {
@@ -92,48 +77,40 @@ export default function ProfileEdit({ user, setUser }: ProfileEditProps) {
           phone: formData.phone,
           address: formData.address,
           bio: formData.bio,
-          // currentPassword: '',
-          // newPassword: '',
+          memberType: formData.memberType,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('서버 오류가 발생했습니다.');
+        const errorData = await response.json();
+        throw new Error(errorData.message || '서버 오류가 발생했습니다.');
       }
 
       const data = await response.json();
-
-      // 응답 데이터 처리 단순화
+      
       const updatedUser: User = {
-        memberId: data.content.memberId,
-        name: data.content.name,
-        email: data.content.email,
-        phone: data.content.phone || '',
-        address: data.content.address || '',
-        bio: data.content.bio || '',
-        // createdAt 처리 개선
-        createdAt: data.content.createdAt ? new Date(data.content.createdAt) : new Date(),
-        // Context의 현재 값을 User 객체에도 동기화
-        memberType: getMemberType(),
+        ...user,
+        ...data.content,
+        createdAt: new Date(data.content.createdAt)
       };
 
       setUser(updatedUser);
-      // 성공적으로 저장되면 임시 데이터 삭제
-      clearTempFormData();
+      setGlobalMemberType(updatedUser.memberType);
+
       setMessage('정보가 성공적으로 수정되었습니다!');
+
     } catch (error) {
-      console.error(error);
-      const errorMessage = error instanceof Error ? error.message : '정보 수정에 실패했습니다. 다시 시도해주세요.';
+      const errorMessage = error instanceof Error ? error.message : '정보 수정에 실패했습니다.';
       setMessage(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
-
+  
   if (!user) {
     return (
         <div className="text-center py-8">
-          <p className="text-gray-500">사용자 정보를 불러올 수 없습니다.</p>
+          <p className="text-gray-500">사용자 정보를 불러오는 중...</p>
         </div>
     );
   }
@@ -179,7 +156,6 @@ export default function ProfileEdit({ user, setUser }: ProfileEditProps) {
                   id="email"
                   name="email"
                   value={formData.email}
-                  onChange={handleInputChange}
                   readOnly
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed"
@@ -279,18 +255,14 @@ export default function ProfileEdit({ user, setUser }: ProfileEditProps) {
           <button
               type="button"
               onClick={() => {
-                const resetMemberType = getMemberType(user?.memberType);
                 setFormData({
                   name: user?.name || '',
                   email: user?.email || '',
                   phone: user?.phone || '',
                   address: user?.address || '',
                   bio: user?.bio || '',
-                  memberType: resetMemberType
+                  memberType: user?.memberType || 'adopter'
                 });
-                // Context도 원래 값으로 복원하고 임시 데이터 삭제
-                setMemberType(resetMemberType);
-                clearTempFormData();
                 setMessage('');
               }}
               className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"

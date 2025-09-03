@@ -66,13 +66,18 @@ export default function LoginPage() {
     } catch (error: unknown) {
       console.log('로그인 에러:', error);
       
-      // 에러 메시지 처리
+      // 에러 메시지 처리 - apiClient에서 던진 Error 객체의 message 사용
       let errorMessage = '로그인에 실패했습니다. 다시 시도해주세요.';
       
-      if (error && typeof error === 'object' && 'response' in error) {
-        const errorResponse = error as { response?: { data?: { message?: string } } };
-        if (errorResponse.response?.data?.message) {
-          errorMessage = errorResponse.response.data.message;
+      if (error instanceof Error) {
+        // apiClient에서 던진 Error 객체의 message가 서버에서 보낸 상세한 오류 메시지
+        const message = error.message;
+        
+        // 500 오류 시 더 친절한 메시지 표시
+        if (message.includes('500')) {
+          errorMessage = '이메일 또는 비밀번호가 올바르지 않습니다. 다시 확인해주세요.';
+        } else {
+          errorMessage = message;
         }
       } else if (error && typeof error === 'object' && 'message' in error) {
         const errorObj = error as { message: string };
@@ -87,7 +92,7 @@ export default function LoginPage() {
 
   const handleKakaoLogin = () => {
     // 백엔드의 OAuth2 엔드포인트로 리다이렉트
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
     if (!apiBaseUrl) {
       console.error('API BASE URL이 설정되지 않았습니다!');
@@ -95,7 +100,7 @@ export default function LoginPage() {
       return;
     }
 
-    console.log('API BASE URL:', apiBaseUrl); // 디버깅용
+    console.log('카카오 로그인 API BASE URL:', apiBaseUrl); // 디버깅용
     window.location.href = `${apiBaseUrl}/oauth2/authorization/kakao`;
   };
 

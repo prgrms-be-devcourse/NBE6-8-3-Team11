@@ -32,14 +32,26 @@ export interface SignupRequest {
 export const memberService = {
   // 로그인
   async login(request: LoginRequest): Promise<LoginResponse> {
-    const response = await apiClient.post<LoginResponse>('/auth/login', request);
-    // 백엔드 응답 구조: { success: boolean, content: LoginResponse, message: string }
-    return response.content;
+    try {
+      const response = await apiClient.post<LoginResponse>('/auth/login', request);
+      // 백엔드 응답 구조: { success: boolean, content: LoginResponse, message: string }
+      return response.content;
+    } catch (error) {
+      console.error('Login service error:', error);
+      // apiClient에서 이미 상세한 오류 메시지를 포함한 Error 객체를 던졌으므로
+      // 그대로 다시 던지면 됩니다.
+      throw error;
+    }
   },
 
   // 회원가입
   async signup(request: SignupRequest): Promise<void> {
-    await apiClient.post<void>('/auth/join', request);
+    try {
+      await apiClient.post<void>('/auth/join', request);
+    } catch (error) {
+      console.error('Signup service error:', error);
+      throw error;
+    }
   },
 
   // 현재 사용자 정보 조회 (저장된 사용자 정보 사용)
