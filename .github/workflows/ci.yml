@@ -1,5 +1,9 @@
 name: CI
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   pull_request:
     branches:
@@ -29,9 +33,9 @@ jobs:
       - name: Grant execute permission to gradlew
         run: chmod +x ./gradlew
         
-      - name: Gradle Build (Allow failures during Kotlin migration)
-        run: ./gradlew build -x test
-        continue-on-error: true
+      # 엄격한 빌드 (실패 시 파이프라인 중단)
+      - name: Gradle Build (Java + Kotlin)
+        run: ./gradlew build -x test --no-daemon
 
   backend-test:
     name: Backend - Test  
@@ -57,9 +61,9 @@ jobs:
       - name: Grant execute permission to gradlew
         run: chmod +x ./gradlew
         
-      - name: Run Tests (Java files only during migration)
-        run: ./gradlew test -x compileKotlin
-        continue-on-error: true
+      # 엄격한 테스트 (Java + Kotlin 모두 컴파일 및 테스트)
+      - name: Run Tests (Java + Kotlin)
+        run: ./gradlew test --no-daemon
 
   frontend-check:
     name: Frontend - Lint & Build
@@ -89,7 +93,7 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: https://nbe6-8-3-team11.fly.dev
 
-  # 메인 레포 PR용 슬랙 알림
+  # 메인 레포 PR용 슬랙 알림 (엄격한 검증 결과 반영으로 업데이트 하겠습니다~)
   notify-slack:
     name: Notify Slack
     runs-on: ubuntu-latest
@@ -114,17 +118,14 @@ jobs:
           backend_result="${{ needs.backend-test.result }}"
           frontend_result="${{ needs.frontend-check.result }}"
           
+          # 엄격한 검증: 모든 단계 성공해야만 통과
           if [ "$backend_result" == "success" ] && [ "$frontend_result" == "success" ]; then
             status_emoji="✅"
-            status_text="모든 테스트 통과"
+            status_text="모든 검증 통과 - 머지 가능"
             color="good"
-          elif [ "$frontend_result" == "success" ]; then
-            status_emoji="⚠️"
-            status_text="Kotlin 마이그레이션 중 - 백엔드 수동 리뷰 필요"
-            color="warning"
           else
             status_emoji="❌"
-            status_text="빌드 실패 - 코드 수정 필요"
+            status_text="검증 실패 - 코드 수정 필요"
             color="danger"
           fi
           
@@ -158,6 +159,14 @@ jobs:
                       {
                         "type": "mrkdwn",
                         "text": "*상태*\n${status_text}"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*백엔드*\n${backend_result}"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*프론트엔드*\n${frontend_result}"
                       }
                     ]
                   },
@@ -185,7 +194,7 @@ jobs:
             --data @slack_message.json \
             "$SLACK_WEBHOOK_URL"
 
-  # 포크 레포 PR용 슬랙 알림  
+  # 포크 레포 PR용 슬랙 알림 (엄격한 검증 결과 반영)
   fork-slack-notify:
     name: Fork Slack Notify
     runs-on: ubuntu-latest
@@ -211,17 +220,14 @@ jobs:
           backend_result="${{ needs.backend-test.result }}"
           frontend_result="${{ needs.frontend-check.result }}"
           
+          # 엄격한 검증: 모든 단계 성공해야만 통과
           if [ "$backend_result" == "success" ] && [ "$frontend_result" == "success" ]; then
             status_emoji="✅"
-            status_text="모든 테스트 통과"
+            status_text="모든 검증 통과 - 머지 가능"
             color="good"
-          elif [ "$frontend_result" == "success" ]; then
-            status_emoji="⚠️"
-            status_text="Kotlin 마이그레이션 중 - 백엔드 수동 리뷰 필요"
-            color="warning"
           else
             status_emoji="❌"
-            status_text="빌드 실패 - 코드 수정 필요"
+            status_text="검증 실패 - 코드 수정 필요"
             color="danger"
           fi
           
@@ -263,6 +269,19 @@ jobs:
                     ]
                   },
                   {
+                    "type": "section",
+                    "fields": [
+                      {
+                        "type": "mrkdwn",
+                        "text": "*백엔드*\n${backend_result}"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*프론트엔드*\n${frontend_result}"
+                      }
+                    ]
+                  },
+                  {
                     "type": "actions",
                     "elements": [
                       {
@@ -285,4 +304,3 @@ jobs:
           curl -X POST -H 'Content-type: application/json' \
             --data @slack_message.json \
             "$SLACK_WEBHOOK_URL"
-

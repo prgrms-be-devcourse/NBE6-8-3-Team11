@@ -1,15 +1,14 @@
 package com.back;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@Disabled
 @SpringBootTest
 class BackendApplicationTests {
 
     @Test
     void contextLoads() {
+        // Spring Context 로딩 테스트
     }
 
 }
