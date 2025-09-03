@@ -41,7 +41,8 @@ class MemberService(
             name = requestDto.name ?: memberToUpdate.name,
             phone = requestDto.phone ?: memberToUpdate.phone,
             address = requestDto.address ?: memberToUpdate.address,
-            bio = requestDto.bio ?: memberToUpdate.bio
+            bio = requestDto.bio ?: memberToUpdate.bio,
+            memberType = requestDto.memberType ?: memberToUpdate.memberType
         )
 //        if (requestDto.newPassword() != null && !requestDto.newPassword().isBlank()) {
 //            if (!passwordEncoder.matches(requestDto.currentPassword(), memberToUpdate.getPassword())) {

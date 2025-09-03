@@ -42,7 +42,8 @@ class AuthService(
 
             name = requestDto.name,
             phone = requestDto.phone,
-            role = UserRole.USER
+            role = UserRole.USER,
+            address = null
         )
 
         return memberRepository.save(newMember).toDto()
