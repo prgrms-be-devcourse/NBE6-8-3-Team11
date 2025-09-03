@@ -1,4 +1,9 @@
-name: CD - Deploy to Fly.io (Speed Optimized)
+name: CD - Deploy to Fly.io
+
+# 중복 배포 방지
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 on:
   push:
@@ -22,7 +27,6 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      # 간단한 Gradle 캐싱만 적용
       - name: Cache Gradle packages
         uses: actions/cache@v4
         with:
@@ -40,100 +44,15 @@ jobs:
         working-directory: ./backend
         run: chmod +x ./gradlew
 
-      # 기본 빌드 (복잡한 옵션 제거)
-      - name: Build with Gradle
+      - name: Build Backend (Skip Tests)
         working-directory: ./backend
         run: ./gradlew clean build -x test --no-daemon --parallel
 
       - name: Setup Fly.io CLI
         uses: superfly/flyctl-actions/setup-flyctl@master
 
-      # 기본 배포 (복잡한 옵션 제거)
       - name: Deploy to Fly.io
         working-directory: ./backend
         run: flyctl deploy --remote-only --app nbe6-8-3-team11
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
-  notify-slack:
-    name: Notify Deployment Result
-    runs-on: ubuntu-latest
-    needs: deploy-backend
-    if: always() && github.repository == 'prgrms-be-devcourse/NBE6-8-3-Team11'
-    
-    steps:
-      - name: Notify deployment result
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          if [ -z "$SLACK_WEBHOOK_URL" ]; then
-            echo "⚠️ SLACK_WEBHOOK_URL이 설정되지 않았습니다."
-            exit 0
-          fi
-          
-          # 배포 결과에 따른 메시지 설정
-          if [ "${{ needs.deploy-backend.result }}" == "success" ]; then
-            status_emoji="🚀"
-            status_text="배포 성공 (최적화됨)"
-            color="good"
-          else
-            status_emoji="❌" 
-            status_text="배포 실패"
-            color="danger"
-          fi
-          
-          # 현재 시간 계산
-          duration="${{ github.event.head_commit.timestamp }}"
-          
-          # Slack 메시지 생성
-          cat << EOF > slack_message.json
-          {
-            "attachments": [
-              {
-                "color": "${color}",
-                "blocks": [
-                  {
-                    "type": "header",
-                    "text": {
-                      "type": "plain_text",
-                      "text": "${status_emoji} NBE6-8-3 배포 결과 (최적화)"
-                    }
-                  },
-                  {
-                    "type": "section",
-                    "fields": [
-                      {
-                        "type": "mrkdwn",
-                        "text": "*상태*\n${status_text}"
-                      },
-                      {
-                        "type": "mrkdwn", 
-                        "text": "*브랜치*\n\`${{ github.ref_name }}\`"
-                      },
-                      {
-                        "type": "mrkdwn",
-                        "text": "*배포 URL*\nhttps://nbe6-8-3-team11.fly.dev"
-                      },
-                      {
-                        "type": "mrkdwn",
-                        "text": "*커밋*\n<https://github.com/prgrms-be-devcourse/NBE6-8-3-Team11/commit/${{ github.sha }}|\`${{ github.sha }}\`>"
-                      }
-                    ]
-                  },
-                  {
-                    "type": "section",
-                    "text": {
-                      "type": "mrkdwn",
-                      "text": "📊 *최적화 적용*: Gradle 캐싱, 병렬 빌드, Docker 빌드 캐시"
-                    }
-                  }
-                ]
-              }
-            ]
-          }
-          EOF
-          
-          # Slack으로 메시지 전송
-          curl -X POST -H 'Content-type: application/json' \
-            --data @slack_message.json \
-            "$SLACK_WEBHOOK_URL"
