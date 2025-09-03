@@ -45,7 +45,7 @@ export default function PetRegistrationPage() {
     
     if (!token || !userInfo) {
       alert('인증 정보가 없습니다. 다시 로그인해주세요.');
-      localStorage.clear(); // 모든 localStorage 초기화
+      // localStorage.clear() 제거 - AuthContext에서 처리하도록 함
       router.replace('/login');
       return;
     }

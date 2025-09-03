@@ -82,7 +82,54 @@ class ApiClient {
         
         // 401 Unauthorized 에러 처리
         if (response.status === 401) {
-          // 토큰이 만료되었거나 유효하지 않은 경우
+          // reissue 엔드포인트가 아닌 경우에만 토큰 갱신 시도
+          if (!normalizedEndpoint.includes('/auth/reissue')) {
+            const refreshToken = localStorage.getItem('refreshToken');
+            if (refreshToken) {
+              try {
+                // 토큰 갱신 시도
+                const reissueResponse = await this.request<{accessToken: string; refreshToken: string}>('/auth/reissue', {
+                  method: 'POST',
+                  body: JSON.stringify({ refreshToken }),
+                });
+                
+                if (reissueResponse.success && reissueResponse.content) {
+                  // 새 토큰 저장
+                  localStorage.setItem('accessToken', reissueResponse.content.accessToken);
+                  localStorage.setItem('refreshToken', reissueResponse.content.refreshToken);
+                  
+                  // 원본 요청 재시도
+                  const retryConfig = {
+                    ...config,
+                    headers: {
+                      ...config.headers,
+                      'Authorization': `Bearer ${reissueResponse.content.accessToken}`
+                    }
+                  };
+                  
+                  const retryResponse = await fetch(url, retryConfig);
+                  if (retryResponse.ok) {
+                    const retryText = await retryResponse.text();
+                    if (!retryText.trim()) {
+                      return {
+                        content: undefined as T,
+                        message: 'Success',
+                        success: true,
+                        code: '200'
+                      };
+                    }
+                    const retryData = JSON.parse(retryText);
+                    console.log('✅ API Success after token refresh:', { url: url, data: retryData });
+                    return retryData;
+                  }
+                }
+              } catch (reissueError) {
+                console.error('Token reissue failed:', reissueError);
+              }
+            }
+          }
+          
+          // 토큰 갱신 실패하거나 reissue 엔드포인트인 경우 로그아웃 처리
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
           localStorage.removeItem('userId');
