@@ -1,6 +1,5 @@
 name: CD Release - Deploy to Fly.io
 
-# 중복 릴리즈 배포 방지
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true

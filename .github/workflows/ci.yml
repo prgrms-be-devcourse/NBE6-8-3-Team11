@@ -1,6 +1,5 @@
 name: CI
 
-# 중복 실행 방지
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -33,7 +32,7 @@ jobs:
         
       - name: Grant execute permission to gradlew
         run: chmod +x ./gradlew
-        
+
       - name: Build Backend (Skip Tests)
         run: ./gradlew build -x test --no-daemon
 
@@ -89,13 +88,14 @@ jobs:
           backend_result="${{ needs.backend-build.result }}"
           frontend_result="${{ needs.frontend-check.result }}"
           
+          # 엄격한 검증: 모든 단계 성공해야만 통과
           if [ "$backend_result" == "success" ] && [ "$frontend_result" == "success" ]; then
             status_emoji="✅"
             status_text="빌드 성공 - 머지 가능"
             color="good"
           else
             status_emoji="❌"
-            status_text="빌드 실패 - 코드 수정 필요"
+            status_text="검증 실패 - 코드 수정 필요"
             color="danger"
           fi
           
