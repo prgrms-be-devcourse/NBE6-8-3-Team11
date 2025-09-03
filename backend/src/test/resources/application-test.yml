@@ -1,40 +1,61 @@
+# 테스트용 설정 - 인메모리 H2 DB 사용
 spring:
+  profiles:
+    active: test
+    
+  # 인메모리 H2 데이터베이스 설정
   datasource:
-    url: jdbc:h2:mem:testdb;MODE=MySQL
-    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
     username: sa
-    password:
+    password: 
+    driver-class-name: org.h2.Driver
+    
+  h2:
+    console:
+      enabled: true
+      
   jpa:
     hibernate:
       ddl-auto: create-drop
-    show-sql: true
-    defer-datasource-initialization: false
-  sql:
-    init:
-      mode: never
-  security:
-    oauth2:
-      client:
-        registration:
-          kakao:
-            client-id: test-client-id
-            scope: profile_nickname, profile_image, account_email
-            client-name: Kakao
-            authorization-grant-type: authorization_code
-            redirect-uri: 'http://localhost:8080/login/oauth2/code/kakao'
-        provider:
-          kakao:
-            authorization-uri: https://kauth.kakao.com/oauth/authorize
-            token-uri: https://kauth.kakao.com/oauth/token
-            user-info-uri: https://kapi.kakao.com/v2/user/me
-            user-name-attribute: id
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: false
 
+  # Redis 테스트 설정 - 내장 Redis 사용
+  data:
+    redis:
+      host: localhost  
+      port: 6370  # 다른 포트 사용
+      timeout: 1000ms
+      connect-timeout: 1000ms
+      repositories:
+        enabled: false  # 테스트에서 Redis Repository 비활성화
+        
+# JWT 테스트 설정
 jwt:
-  secret: test-jwt-secret-key-for-testing-purposes-only
-  access-token-expiration: PT15M
-  refresh-token-expiration: PT168H
+  secret: testSecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLongAndSecureEnoughForTesting123456789
+  access-token-expiration: PT1H
+  refresh-token-expiration: PT24H
 
+# 쿠키 테스트 설정  
+cookie:
+  secure: false
+
+# 웹소켓 테스트 설정
+websocket:
+  allowed-origins:
+    - "http://localhost:3000"
+    - "http://localhost:8080"
+
+# 로깅 설정
 logging:
   level:
-    com.back: DEBUG
-    org.springframework.security: DEBUG 
+    root: WARN
+    com.back: INFO
+    org.springframework.web.socket: WARN
+    org.springframework.messaging: WARN
+    org.hibernate: WARN
+    org.springframework.boot.test: INFO
